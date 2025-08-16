@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: live-bid-dash
+    env: docker
+    plan: free
+    region: oregon
+    branch: main
+    repo: https://github.com/a6uzar/Assignment_INE.git
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: VITE_SUPABASE_URL
+        fromService:
+          type: env
+          name: VITE_SUPABASE_URL
+      - key: VITE_SUPABASE_ANON_KEY
+        fromService:
+          type: env
+          name: VITE_SUPABASE_ANON_KEY
+    scaling:
+      minInstances: 1
+      maxInstances: 3
+    buildCommand: echo "Building with Docker"
+    startCommand: node server.js

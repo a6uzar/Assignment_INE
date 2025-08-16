@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Gavel, TrendingUp, Users, Clock, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { createSampleAuctions } from '@/utils/sampleData';
 
 interface Auction {
   id: string;
@@ -34,26 +35,40 @@ const Index = () => {
   });
 
   useEffect(() => {
-    fetchFeaturedAuctions();
-    fetchStats();
+    initializeData();
   }, []);
 
+  const initializeData = async () => {
+    // Create sample data if none exists
+    await createSampleAuctions();
+    
+    // Then fetch the data
+    await fetchFeaturedAuctions();
+    await fetchStats();
+  };
+
   const fetchFeaturedAuctions = async () => {
-    const { data } = await (supabase as any)
+    const { data, error } = await supabase
       .from('auctions')
       .select('*')
       .eq('status', 'active')
+      .eq('featured', true)
       .order('bid_count', { ascending: false })
       .limit(6);
+
+    if (error) {
+      console.error('Error fetching auctions:', error);
+      return;
+    }
 
     setFeaturedAuctions(data || []);
   };
 
   const fetchStats = async () => {
     const [auctionsResult, usersResult, bidsResult] = await Promise.all([
-      (supabase as any).from('auctions').select('id, status', { count: 'exact' }),
-      (supabase as any).from('users').select('id', { count: 'exact' }),
-      (supabase as any).from('bids').select('id', { count: 'exact' }),
+      supabase.from('auctions').select('id, status', { count: 'exact' }),
+      supabase.from('users').select('id', { count: 'exact' }),
+      supabase.from('bids').select('id', { count: 'exact' }),
     ]);
 
     const activeAuctions = auctionsResult.data?.filter((a: any) => a.status === 'active').length || 0;

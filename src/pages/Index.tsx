@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Gavel, TrendingUp, Users, Clock, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createSimpleAuctions } from '@/utils/simpleSampleData';
+import { fixUserProfiles, getUserStatus } from '@/utils/userProfileFix';
 
 interface Auction {
   id: string;
@@ -33,10 +34,33 @@ const Index = () => {
     totalUsers: 0,
     totalBids: 0,
   });
+  const [userStatus, setUserStatus] = useState<any>(null);
+
+  const checkUserStatus = async () => {
+    if (user) {
+      const status = await getUserStatus();
+      setUserStatus(status);
+      console.log('User status:', status);
+    }
+  };
+
+  const handleFixUserProfile = async () => {
+    const result = await fixUserProfiles();
+    console.log('Fix result:', result);
+    if (result.success) {
+      await checkUserStatus();
+      alert('User profile fixed successfully!');
+    } else {
+      alert(`Failed to fix user profile: ${result.message}`);
+    }
+  };
 
   useEffect(() => {
     initializeData();
-  }, []);
+    if (user) {
+      checkUserStatus();
+    }
+  }, [user]);
 
   const initializeData = async () => {
     // Only create sample data if user is logged in
@@ -86,7 +110,36 @@ const Index = () => {
   if (!user) {
     return (
       <div className="min-h-screen">
-        {/* Hero Section */}
+        {/* Development User Status Check */}
+      {user && userStatus && (
+        <div className="mb-8">
+          <Card className={`border-2 ${userStatus.hasProfile ? 'border-green-500' : 'border-red-500'}`}>
+            <CardHeader>
+              <CardTitle className="text-lg">
+                User Status {userStatus.hasProfile ? '✅' : '❌'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2 text-sm">
+                <div>Authenticated: {userStatus.authenticated ? '✅' : '❌'}</div>
+                <div>Has Profile: {userStatus.hasProfile ? '✅' : '❌'}</div>
+                <div>User ID: {userStatus.authUser?.id}</div>
+                <div>Email: {userStatus.authUser?.email}</div>
+                {userStatus.error && (
+                  <div className="text-red-600">Error: {userStatus.error}</div>
+                )}
+                {!userStatus.hasProfile && (
+                  <Button onClick={handleFixUserProfile} className="mt-2">
+                    Fix User Profile
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Hero Section */}
         <section className="bg-gradient-hero py-20">
           <div className="container text-center">
             <h1 className="text-5xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent">

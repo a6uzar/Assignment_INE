@@ -31,6 +31,7 @@ import { useToast } from '@/hooks/use-toast';
 import { auctionService } from '@/lib/api/auctions';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { ensureUserProfile } from '@/utils/userProfile';
 
 const auctionSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -45,6 +46,15 @@ const auctionSchema = z.object({
   location: z.string().optional(),
   shipping_cost: z.number().min(0, 'Shipping cost cannot be negative'),
   images: z.array(z.string()).default([]),
+}).refine((data) => {
+  // Validate reserve price is greater than or equal to starting price
+  if (data.reserve_price !== undefined && data.reserve_price !== null && data.reserve_price > 0) {
+    return data.reserve_price >= data.starting_price;
+  }
+  return true;
+}, {
+  message: "Reserve price must be greater than or equal to starting price",
+  path: ["reserve_price"],
 });
 
 type AuctionFormData = z.infer<typeof auctionSchema>;
@@ -178,6 +188,12 @@ export function CreateAuctionWizard() {
     setIsSubmitting(true);
 
     try {
+      // Ensure user profile exists in the database
+      const userProfileExists = await ensureUserProfile();
+      if (!userProfileExists) {
+        throw new Error("Failed to create user profile. Please try logging out and logging back in.");
+      }
+
       // Validate required fields
       if (!data.title || !data.description || !data.category_id) {
         throw new Error("Please fill in all required fields");
@@ -385,12 +401,15 @@ export function CreateAuctionWizard() {
                   step="0.01"
                   min="0"
                   {...register('reserve_price', { valueAsNumber: true })}
-                  className="pl-10"
+                  className={`pl-10 ${errors.reserve_price ? 'border-destructive' : ''}`}
                   placeholder="Minimum acceptable price (optional)"
                 />
               </div>
+              {errors.reserve_price && (
+                <p className="text-sm text-destructive">{errors.reserve_price.message}</p>
+              )}
               <p className="text-sm text-muted-foreground">
-                The reserve price is the minimum amount you'll accept. Bidders won't see this amount.
+                The reserve price is the minimum amount you'll accept. It must be at least equal to your starting price. Bidders won't see this amount.
               </p>
             </div>
 
@@ -415,9 +434,19 @@ export function CreateAuctionWizard() {
                 {watchedValues.reserve_price && (
                   <div className="flex justify-between">
                     <span>Reserve Price:</span>
-                    <span className="font-semibold text-orange-500">
+                    <span className={`font-semibold ${
+                      watchedValues.reserve_price < (watchedValues.starting_price || 0) 
+                        ? 'text-destructive' 
+                        : 'text-orange-500'
+                    }`}>
                       ${watchedValues.reserve_price.toLocaleString()}
                     </span>
+                  </div>
+                )}
+                {watchedValues.reserve_price && watchedValues.starting_price && 
+                 watchedValues.reserve_price < watchedValues.starting_price && (
+                  <div className="text-sm text-destructive bg-destructive/10 p-2 rounded">
+                    ⚠️ Reserve price must be at least ${watchedValues.starting_price.toLocaleString()}
                   </div>
                 )}
               </CardContent>

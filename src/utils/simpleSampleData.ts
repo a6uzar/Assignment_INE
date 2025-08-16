@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { ensureUserProfile } from './userProfile';
 
 export const createSimpleAuctions = async () => {
   try {
@@ -25,6 +26,13 @@ export const createSimpleAuctions = async () => {
     
     if (!user) {
       console.log('No user logged in - cannot create sample auctions');
+      return;
+    }
+
+    // Ensure user profile exists in the database
+    const userProfileExists = await ensureUserProfile();
+    if (!userProfileExists) {
+      console.error('Failed to ensure user profile exists');
       return;
     }
     

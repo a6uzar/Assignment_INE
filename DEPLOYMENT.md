@@ -1,6 +1,6 @@
 # Deployment Guide for Render.com
 
-## 🚀 Deploying LiveBid Auction Platform to Render.com
+## 🚀 Deploying Live Bid Dash Auction Platform to Render.com
 
 This guide will help you deploy your auction platform to Render.com using Docker and GitHub Actions CI/CD.
 
@@ -158,7 +158,7 @@ This prevents the ~30-second cold start delay users would experience.
 
 ## 🎉 Success!
 
-Your LiveBid auction platform is now live on Render.com with:
+Your Live Bid Dash auction platform is now live on Render.com with:
 - ✅ Dockerized deployment
 - ✅ GitHub Actions CI/CD
 - ✅ Auto-scaling infrastructure

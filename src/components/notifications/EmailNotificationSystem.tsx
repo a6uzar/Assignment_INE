@@ -223,7 +223,7 @@ export function EmailNotificationSystem() {
       pdf.text('INVOICE', 20, 20);
       
       pdf.setFontSize(12);
-      pdf.text('LiveBid Auction Platform', 20, 30);
+      pdf.text('Live Bid Dash Auction Platform', 20, 30);
       pdf.text('Invoice Date: ' + new Date().toLocaleDateString(), 20, 40);
       pdf.text('Invoice #: ' + transactionData.id, 20, 50);
       

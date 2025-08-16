@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Gavel, TrendingUp, Users, Clock, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { createSampleAuctions } from '@/utils/sampleData';
+import { createSimpleAuctions } from '@/utils/simpleSampleData';
 
 interface Auction {
   id: string;
@@ -17,7 +17,7 @@ interface Auction {
   reserve_price?: number;
   start_time: string;
   end_time: string;
-  status: 'draft' | 'scheduled' | 'active' | 'ended' | 'completed';
+  status: 'draft' | 'scheduled' | 'active' | 'ended' | 'completed' | 'cancelled';
   category?: string;
   images?: string[];
   view_count: number;
@@ -39,10 +39,12 @@ const Index = () => {
   }, []);
 
   const initializeData = async () => {
-    // Create sample data if none exists
-    await createSampleAuctions();
+    // Only create sample data if user is logged in
+    if (user) {
+      await createSimpleAuctions();
+    }
     
-    // Then fetch the data
+    // Always fetch the data
     await fetchFeaturedAuctions();
     await fetchStats();
   };
@@ -88,7 +90,7 @@ const Index = () => {
         <section className="bg-gradient-hero py-20">
           <div className="container text-center">
             <h1 className="text-5xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent">
-              Welcome to Mini Auction System
+              Welcome to Live Bid Dash
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
               Discover amazing items, place bids, and experience the thrill of online auctions.

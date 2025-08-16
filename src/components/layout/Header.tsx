@@ -26,9 +26,13 @@ export function Header() {
     <header className="border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 sticky top-0 z-50">
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center space-x-2">
-          <Gavel className="h-6 w-6 text-primary" />
+          <img 
+            src="/favicon.jpeg" 
+            alt="Live Bid Dash Logo" 
+            className="h-8 w-8 rounded-md object-cover"
+          />
           <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Mini Auction
+            Live Bid Dash
           </span>
         </Link>
 

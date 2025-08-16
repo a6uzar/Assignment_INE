@@ -11,6 +11,8 @@ import Auth from "./pages/Auth";
 import Auctions from "./pages/Auctions";
 import AuctionRoom from "./pages/AuctionRoom";
 import CreateAuction from "./pages/CreateAuction";
+import MyAuctions from "./pages/MyAuctions";
+import MyBids from "./pages/MyBids";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +38,8 @@ function AppContent() {
           <Route path="/auctions" element={<Auctions />} />
           <Route path="/auction/:id" element={<AuctionRoom />} />
           <Route path="/create-auction" element={<CreateAuction />} />
+          <Route path="/my-auctions" element={<MyAuctions />} />
+          <Route path="/my-bids" element={<MyBids />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
@@ -52,7 +56,6 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AppContent />
-          <DevUtils />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

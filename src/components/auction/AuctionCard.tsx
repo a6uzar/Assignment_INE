@@ -14,7 +14,7 @@ interface Auction {
   reserve_price?: number;
   start_time: string;
   end_time: string;
-  status: 'draft' | 'scheduled' | 'active' | 'ended' | 'completed';
+  status: 'draft' | 'scheduled' | 'active' | 'ended' | 'completed' | 'cancelled';
   category?: string;
   images?: string[];
   view_count: number;

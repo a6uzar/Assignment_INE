@@ -13,119 +13,74 @@ export const createSampleAuctions = async () => {
       return true;
     }
 
-    // First, we need to get a valid seller_id by creating a sample user or using auth
-    // For demo purposes, we'll create auctions without a specific seller
-    const dummySellerId = '00000000-0000-0000-0000-000000000000'; // UUID placeholder
+    // First, try to create a system user for the auctions
+    const { data: authResult, error: authError } = await supabase.auth.signUp({
+      email: 'system@livebiddash.com',
+      password: 'systempassword123!',
+      options: {
+        data: {
+          full_name: 'Live Bid Dash System'
+        }
+      }
+    });
 
-    // Sample auction data matching the database schema
+    let sellerId = authResult?.user?.id;
+
+    // If system user creation fails, try to get current user
+    if (!sellerId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      sellerId = user?.id;
+    }
+
+    // If still no seller, we can't create auctions due to database constraints
+    if (!sellerId) {
+      console.log('No valid seller ID available. Please sign in to create sample auctions.');
+      return false;
+    }
+
+    // Simplified sample auction data
     const sampleAuctions = [
       {
         title: "Vintage Rolex Submariner",
-        description: "Rare 1960s Rolex Submariner in excellent condition. Original box and papers included. A collector's dream watch with authentic patina and mechanical movement.",
+        description: "Rare 1960s Rolex Submariner in excellent condition. Original box and papers included.",
         starting_price: 5000,
         current_price: 7500,
-        reserve_price: 8000,
         start_time: new Date().toISOString(),
-        end_time: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days from now
+        end_time: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
         status: 'active' as const,
         images: ['/placeholder.svg'],
-        view_count: 234,
-        bid_count: 15,
-        seller_id: dummySellerId,
         featured: true,
         shipping_cost: 25,
         bid_increment: 100,
-        condition: 'Used - Excellent'
+        seller_id: sellerId
       },
       {
-        title: "MacBook Pro M3 - 16 inch",
-        description: "Brand new MacBook Pro with M3 chip, 16GB RAM, 512GB SSD. Still sealed in original packaging. Perfect for professionals and creators.",
+        title: "MacBook Pro M3 - 16 inch", 
+        description: "Brand new MacBook Pro with M3 chip, 16GB RAM, 512GB SSD. Still sealed in original packaging.",
         starting_price: 1500,
         current_price: 1850,
-        reserve_price: 2000,
         start_time: new Date().toISOString(),
-        end_time: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days from now
+        end_time: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
         status: 'active' as const,
         images: ['/placeholder.svg'],
-        view_count: 189,
-        bid_count: 12,
-        seller_id: dummySellerId,
         featured: true,
         shipping_cost: 15,
         bid_increment: 50,
-        condition: 'New'
+        seller_id: sellerId
       },
       {
         title: "Original Banksy Print",
-        description: "Authenticated Banksy screen print 'Girl with Balloon' from 2004. Certificate of authenticity included. Rare opportunity for art collectors.",
+        description: "Authenticated Banksy screen print 'Girl with Balloon' from 2004. Certificate of authenticity included.",
         starting_price: 3000,
         current_price: 4200,
-        reserve_price: 5000,
         start_time: new Date().toISOString(),
-        end_time: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days from now
+        end_time: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
         status: 'active' as const,
         images: ['/placeholder.svg'],
-        view_count: 156,
-        bid_count: 8,
-        seller_id: dummySellerId,
         featured: true,
         shipping_cost: 50,
         bid_increment: 200,
-        condition: 'Used - Very Good'
-      },
-      {
-        title: "1969 Ford Mustang Boss 429",
-        description: "Legendary muscle car in pristine condition. Matching numbers, fully restored by certified mechanics. One of the most sought-after classic cars.",
-        starting_price: 150000,
-        current_price: 175000,
-        reserve_price: 200000,
-        start_time: new Date().toISOString(),
-        end_time: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
-        status: 'active' as const,
-        images: ['/placeholder.svg'],
-        view_count: 423,
-        bid_count: 22,
-        seller_id: dummySellerId,
-        featured: true,
-        shipping_cost: 500,
-        bid_increment: 5000,
-        condition: 'Restored'
-      },
-      {
-        title: "Pokemon Charizard First Edition",
-        description: "PSA 10 graded Charizard from Base Set (1998). Perfect condition, no scratches or damage. Holy grail for Pokemon card collectors.",
-        starting_price: 8000,
-        current_price: 9500,
-        reserve_price: 12000,
-        start_time: new Date().toISOString(),
-        end_time: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day from now
-        status: 'active' as const,
-        images: ['/placeholder.svg'],
-        view_count: 312,
-        bid_count: 28,
-        seller_id: dummySellerId,
-        featured: true,
-        shipping_cost: 10,
-        bid_increment: 250,
-        condition: 'Mint'
-      },
-      {
-        title: "Chanel Vintage Handbag",
-        description: "Authentic Chanel 2.55 quilted handbag from 1980s. Black lambskin leather with gold hardware. Excellent condition with authenticity card.",
-        starting_price: 2500,
-        current_price: 3100,
-        reserve_price: 3500,
-        start_time: new Date().toISOString(),
-        end_time: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(), // 4 days from now
-        status: 'active' as const,
-        images: ['/placeholder.svg'],
-        view_count: 198,
-        bid_count: 18,
-        seller_id: dummySellerId,
-        featured: true,
-        shipping_cost: 20,
-        bid_increment: 100,
-        condition: 'Used - Excellent'
+        seller_id: sellerId
       }
     ];
 

@@ -1,0 +1,27 @@
+name: Keep Warm
+
+on:
+  schedule:
+    # Ping every 14 minutes to keep the free tier active
+    - cron: '*/14 * * * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  keep-warm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping application
+        run: |
+          # Replace with your actual Render URL once deployed
+          URL="https://live-bid-dash.onrender.com"
+          
+          echo "🏓 Pinging $URL to keep it warm..."
+          
+          # Ping health endpoint
+          curl -f "$URL/health" || echo "Health check failed"
+          
+          # Ping main page
+          curl -f "$URL/" || echo "Main page ping failed"
+          
+          echo "✅ Keep-warm ping completed"
+        continue-on-error: true

@@ -82,6 +82,26 @@ Your repository now includes:
    - ✅ Real-time bidding functions
    - ✅ Admin dashboard accessible
 
+### Step 6: Prevent Free Tier Cold Starts (Important!)
+
+Render's free tier goes to sleep after 15 minutes of inactivity. We've included solutions:
+
+#### Option 1: GitHub Actions Keep-Warm (Included)
+- ✅ Automatic pings every 14 minutes via `.github/workflows/keep-warm.yml`
+- ✅ Update the URL in the file after deployment: Replace `https://live-bid-dash.onrender.com` with your actual URL
+
+#### Option 2: External Monitoring (Recommended)
+1. **UptimeRobot** (Free): 
+   - Sign up at [uptimerobot.com](https://uptimerobot.com)
+   - Add HTTP monitor for your Render URL
+   - Set 5-minute intervals
+   
+2. **Cron-job.org** (Free):
+   - Sign up at [cron-job.org](https://cron-job.org)
+   - Create job to ping `/health` endpoint every 10 minutes
+
+This prevents the ~30-second cold start delay users would experience.
+
 ### Troubleshooting
 
 #### Common Issues:

@@ -67,7 +67,7 @@ const Index = () => {
     if (user) {
       await createSimpleAuctions();
     }
-    
+
     // Always fetch the data
     await fetchFeaturedAuctions();
     await fetchStats();
@@ -77,7 +77,7 @@ const Index = () => {
     const { data, error } = await supabase
       .from('auctions')
       .select('*')
-      .eq('status', 'active')
+      .in('status', ['active', 'scheduled'])
       .eq('featured', true)
       .order('bid_count', { ascending: false })
       .limit(6);
@@ -111,35 +111,35 @@ const Index = () => {
     return (
       <div className="min-h-screen">
         {/* Development User Status Check */}
-      {user && userStatus && (
-        <div className="mb-8">
-          <Card className={`border-2 ${userStatus.hasProfile ? 'border-green-500' : 'border-red-500'}`}>
-            <CardHeader>
-              <CardTitle className="text-lg">
-                User Status {userStatus.hasProfile ? '✅' : '❌'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 text-sm">
-                <div>Authenticated: {userStatus.authenticated ? '✅' : '❌'}</div>
-                <div>Has Profile: {userStatus.hasProfile ? '✅' : '❌'}</div>
-                <div>User ID: {userStatus.authUser?.id}</div>
-                <div>Email: {userStatus.authUser?.email}</div>
-                {userStatus.error && (
-                  <div className="text-red-600">Error: {userStatus.error}</div>
-                )}
-                {!userStatus.hasProfile && (
-                  <Button onClick={handleFixUserProfile} className="mt-2">
-                    Fix User Profile
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+        {user && userStatus && (
+          <div className="mb-8">
+            <Card className={`border-2 ${userStatus.hasProfile ? 'border-green-500' : 'border-red-500'}`}>
+              <CardHeader>
+                <CardTitle className="text-lg">
+                  User Status {userStatus.hasProfile ? '✅' : '❌'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 text-sm">
+                  <div>Authenticated: {userStatus.authenticated ? '✅' : '❌'}</div>
+                  <div>Has Profile: {userStatus.hasProfile ? '✅' : '❌'}</div>
+                  <div>User ID: {userStatus.authUser?.id}</div>
+                  <div>Email: {userStatus.authUser?.email}</div>
+                  {userStatus.error && (
+                    <div className="text-red-600">Error: {userStatus.error}</div>
+                  )}
+                  {!userStatus.hasProfile && (
+                    <Button onClick={handleFixUserProfile} className="mt-2">
+                      Fix User Profile
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
-      {/* Hero Section */}
+        {/* Hero Section */}
         <section className="bg-gradient-hero py-20">
           <div className="container text-center">
             <h1 className="text-5xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent">
@@ -289,7 +289,7 @@ const Index = () => {
             </Link>
           </Button>
         </div>
-        
+
         {featuredAuctions.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {featuredAuctions.map((auction) => (

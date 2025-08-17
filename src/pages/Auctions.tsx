@@ -46,13 +46,13 @@ export default function Auctions() {
       const { data, error } = await (supabase as any)
         .from('auctions')
         .select('*')
-        .in('status', ['active', 'ended', 'scheduled'])
+        .in('status', ['draft', 'active', 'ended', 'scheduled'])
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
       setAuctions(data || []);
-      
+
       // Extract unique categories
       const uniqueCategories = [...new Set(data?.map((auction: any) => auction.category).filter(Boolean) || [])] as string[];
       setCategories(uniqueCategories);
@@ -94,6 +94,7 @@ export default function Auctions() {
   const getStatusCounts = () => {
     return {
       all: auctions.length,
+      draft: auctions.filter(a => a.status === 'draft').length,
       active: auctions.filter(a => a.status === 'active').length,
       scheduled: auctions.filter(a => a.status === 'scheduled').length,
       ended: auctions.filter(a => a.status === 'ended').length,
@@ -142,6 +143,7 @@ export default function Auctions() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Status ({statusCounts.all})</SelectItem>
+              <SelectItem value="draft">Draft ({statusCounts.draft})</SelectItem>
               <SelectItem value="active">Live ({statusCounts.active})</SelectItem>
               <SelectItem value="scheduled">Scheduled ({statusCounts.scheduled})</SelectItem>
               <SelectItem value="ended">Ended ({statusCounts.ended})</SelectItem>
@@ -162,28 +164,35 @@ export default function Auctions() {
 
         {/* Status badges */}
         <div className="flex gap-2 flex-wrap">
-          <Badge 
+          <Badge
             variant={statusFilter === 'all' ? 'default' : 'outline'}
             className="cursor-pointer"
             onClick={() => setStatusFilter('all')}
           >
             All ({statusCounts.all})
           </Badge>
-          <Badge 
+          <Badge
+            variant={statusFilter === 'draft' ? 'default' : 'outline'}
+            className="cursor-pointer"
+            onClick={() => setStatusFilter('draft')}
+          >
+            Draft ({statusCounts.draft})
+          </Badge>
+          <Badge
             variant={statusFilter === 'active' ? 'default' : 'outline'}
             className="cursor-pointer"
             onClick={() => setStatusFilter('active')}
           >
             Live ({statusCounts.active})
           </Badge>
-          <Badge 
+          <Badge
             variant={statusFilter === 'scheduled' ? 'default' : 'outline'}
             className="cursor-pointer"
             onClick={() => setStatusFilter('scheduled')}
           >
             Scheduled ({statusCounts.scheduled})
           </Badge>
-          <Badge 
+          <Badge
             variant={statusFilter === 'ended' ? 'default' : 'outline'}
             className="cursor-pointer"
             onClick={() => setStatusFilter('ended')}

@@ -193,6 +193,22 @@ export function CreateAuctionWizard() {
         throw new Error("Please set auction start and end times");
       }
 
+      // Determine auction status based on start time
+      const now = new Date();
+      const startTime = new Date(data.start_time);
+      const endTime = new Date(data.end_time);
+
+      let auctionStatus: 'draft' | 'scheduled' | 'active' = 'draft';
+
+      if (startTime <= now && endTime > now) {
+        auctionStatus = 'active';
+      } else if (startTime > now) {
+        auctionStatus = 'scheduled';
+      } else {
+        // If start time is in the past but end time is also past, keep as draft for user to review
+        auctionStatus = 'draft';
+      }
+
       const auctionData = {
         title: data.title,
         description: data.description,
@@ -207,7 +223,7 @@ export function CreateAuctionWizard() {
         shipping_cost: Number(data.shipping_cost) || 0,
         images: data.images || [],
         seller_id: user.id,
-        status: 'draft' as const,
+        status: auctionStatus,
       };
 
       console.log('Auction data to submit:', auctionData);
@@ -295,8 +311,8 @@ export function CreateAuctionWizard() {
                     >
                       <div
                         className={`border-2 rounded-lg p-4 cursor-pointer transition-colors text-center min-h-[120px] flex flex-col items-center justify-center ${watchedValues.category_id === category.id
-                            ? 'border-primary bg-primary/10'
-                            : 'border-muted hover:border-primary/50'
+                          ? 'border-primary bg-primary/10'
+                          : 'border-muted hover:border-primary/50'
                           }`}
                         onClick={() => setValue('category_id', category.id)}
                       >
@@ -433,8 +449,8 @@ export function CreateAuctionWizard() {
                   <div className="flex justify-between">
                     <span>Reserve Price:</span>
                     <span className={`font-semibold ${watchedValues.reserve_price < (watchedValues.starting_price || 0)
-                        ? 'text-destructive'
-                        : 'text-orange-500'
+                      ? 'text-destructive'
+                      : 'text-orange-500'
                       }`}>
                       ${watchedValues.reserve_price.toLocaleString()}
                     </span>

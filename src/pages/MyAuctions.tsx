@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { AuctionCard } from '@/components/auction/AuctionCard';
+import { AuctionActions } from '@/components/auction/AuctionActions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -23,6 +24,10 @@ interface Auction {
   view_count: number;
   bid_count: number;
   featured?: boolean;
+  condition?: string;
+  location?: string;
+  category_id?: string;
+  seller_id?: string;
 }
 
 const MyAuctions = () => {
@@ -183,12 +188,26 @@ const MyAuctions = () => {
               {auctions.map((auction) => (
                 <div key={auction.id} className="relative">
                   <AuctionCard auction={auction} />
-                  <Badge 
-                    variant={auction.status === 'active' ? 'default' : 'secondary'}
-                    className="absolute top-2 right-2"
-                  >
-                    {auction.status}
-                  </Badge>
+                  <div className="absolute top-2 left-2">
+                    <Badge
+                      variant={auction.status === 'active' ? 'default' : 'secondary'}
+                    >
+                      {auction.status}
+                    </Badge>
+                  </div>
+                  <div className="absolute top-2 right-2">
+                    <AuctionActions
+                      auction={{
+                        ...auction,
+                        seller_id: auction.seller_id || user?.id || '',
+                        category_id: auction.category_id || '',
+                        condition: auction.condition || 'used',
+                        location: auction.location || '',
+                      }}
+                      onAuctionUpdated={fetchMyAuctions}
+                      onAuctionDeleted={fetchMyAuctions}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -197,7 +216,22 @@ const MyAuctions = () => {
           <TabsContent value="active" className="mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filterAuctions('active').map((auction) => (
-                <AuctionCard key={auction.id} auction={auction} />
+                <div key={auction.id} className="relative">
+                  <AuctionCard auction={auction} />
+                  <div className="absolute top-2 right-2">
+                    <AuctionActions
+                      auction={{
+                        ...auction,
+                        seller_id: auction.seller_id || user?.id || '',
+                        category_id: auction.category_id || '',
+                        condition: auction.condition || 'used',
+                        location: auction.location || '',
+                      }}
+                      onAuctionUpdated={fetchMyAuctions}
+                      onAuctionDeleted={fetchMyAuctions}
+                    />
+                  </div>
+                </div>
               ))}
             </div>
           </TabsContent>
@@ -205,7 +239,22 @@ const MyAuctions = () => {
           <TabsContent value="ended" className="mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filterAuctions('ended').concat(filterAuctions('completed')).map((auction) => (
-                <AuctionCard key={auction.id} auction={auction} />
+                <div key={auction.id} className="relative">
+                  <AuctionCard auction={auction} />
+                  <div className="absolute top-2 right-2">
+                    <AuctionActions
+                      auction={{
+                        ...auction,
+                        seller_id: auction.seller_id || user?.id || '',
+                        category_id: auction.category_id || '',
+                        condition: auction.condition || 'used',
+                        location: auction.location || '',
+                      }}
+                      onAuctionUpdated={fetchMyAuctions}
+                      onAuctionDeleted={fetchMyAuctions}
+                    />
+                  </div>
+                </div>
               ))}
             </div>
           </TabsContent>
@@ -213,7 +262,22 @@ const MyAuctions = () => {
           <TabsContent value="draft" className="mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filterAuctions('draft').map((auction) => (
-                <AuctionCard key={auction.id} auction={auction} />
+                <div key={auction.id} className="relative">
+                  <AuctionCard auction={auction} />
+                  <div className="absolute top-2 right-2">
+                    <AuctionActions
+                      auction={{
+                        ...auction,
+                        seller_id: auction.seller_id || user?.id || '',
+                        category_id: auction.category_id || '',
+                        condition: auction.condition || 'used',
+                        location: auction.location || '',
+                      }}
+                      onAuctionUpdated={fetchMyAuctions}
+                      onAuctionDeleted={fetchMyAuctions}
+                    />
+                  </div>
+                </div>
               ))}
             </div>
           </TabsContent>
@@ -221,7 +285,22 @@ const MyAuctions = () => {
           <TabsContent value="scheduled" className="mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filterAuctions('scheduled').map((auction) => (
-                <AuctionCard key={auction.id} auction={auction} />
+                <div key={auction.id} className="relative">
+                  <AuctionCard auction={auction} />
+                  <div className="absolute top-2 right-2">
+                    <AuctionActions
+                      auction={{
+                        ...auction,
+                        seller_id: auction.seller_id || user?.id || '',
+                        category_id: auction.category_id || '',
+                        condition: auction.condition || 'used',
+                        location: auction.location || '',
+                      }}
+                      onAuctionUpdated={fetchMyAuctions}
+                      onAuctionDeleted={fetchMyAuctions}
+                    />
+                  </div>
+                </div>
               ))}
             </div>
           </TabsContent>

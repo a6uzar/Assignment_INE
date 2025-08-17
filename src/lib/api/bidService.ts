@@ -1,6 +1,24 @@
 import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
 import { Bid, ApiResponse } from '@/types/database';
 import { handleError } from '@/lib/performance-utils';
+
+type DbBid = Database['public']['Tables']['bids']['Row'];
+
+// Helper function to convert database bid to application bid
+function mapDbBidToBid(dbBid: any): Bid {
+  return {
+    ...dbBid,
+    max_auto_bid: dbBid.auto_bid_max_amount,
+    is_auto_bid: dbBid.is_auto_bid || false,
+    status: dbBid.status || 'active',
+    bid_time: dbBid.bid_time || dbBid.created_at,
+    // Map relations with defaults
+    bidder: dbBid.users || undefined,
+    auction: dbBid.auction || undefined,
+    users: dbBid.users || undefined,
+  } as Bid;
+}
 
 export interface PlaceBidParams {
   auctionId: string;
@@ -64,7 +82,7 @@ export const bidService: BidService = {
 
       if (error) throw error;
 
-      return { success: true, data: data || [] };
+      return { success: true, data: (data || []).map(mapDbBidToBid) };
     } catch (error) {
       return {
         success: false,
@@ -87,7 +105,8 @@ export const bidService: BidService = {
             title,
             current_price,
             status,
-            end_time
+            end_time,
+            winner_id
           )
         `)
         .eq('bidder_id', userId)
@@ -95,7 +114,7 @@ export const bidService: BidService = {
 
       if (error) throw error;
 
-      return { success: true, data: data || [] };
+      return { success: true, data: (data || []).map(mapDbBidToBid) };
     } catch (error) {
       return {
         success: false,

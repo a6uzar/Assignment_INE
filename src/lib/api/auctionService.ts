@@ -1,6 +1,10 @@
 import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
 import { Auction, ApiResponse } from '@/types/database';
 import { handleError } from '@/lib/performance-utils';
+
+type DbAuction = Database['public']['Tables']['auctions']['Row'];
+type DbAuctionInsert = Database['public']['Tables']['auctions']['Insert'];
 
 export interface CreateAuctionParams {
   title: string;
@@ -17,6 +21,21 @@ export interface CreateAuctionParams {
   seller_id: string;
   tags: string[];
   auction_type: 'standard' | 'buy_now' | 'reserve';
+}
+
+// Helper function to convert database auction to application auction
+function mapDbAuctionToAuction(dbAuction: any): Auction {
+  return {
+    ...dbAuction,
+    category: '', // Will be filled by relation or separately
+    image_url: dbAuction.images?.[0] || '', // Use first image as main image
+    watchers: 0, // Default value
+    tags: [], // Default value
+    is_featured: dbAuction.featured || false,
+    auction_type: 'standard', // Default value
+    seller_name: '',
+    seller_rating: 0,
+  } as Auction;
 }
 
 export interface UpdateAuctionParams {
@@ -84,7 +103,7 @@ export const auctionService: AuctionService = {
 
       if (error) throw error;
 
-      return { success: true, data: data as Auction };
+      return { success: true, data: mapDbAuctionToAuction(data) };
     } catch (error) {
       return {
         success: false,
@@ -108,7 +127,7 @@ export const auctionService: AuctionService = {
 
       if (error) throw error;
 
-      return { success: true, data: data as Auction };
+      return { success: true, data: mapDbAuctionToAuction(data) };
     } catch (error) {
       return {
         success: false,
@@ -149,7 +168,7 @@ export const auctionService: AuctionService = {
 
       if (error) throw error;
 
-      return { success: true, data: data as Auction };
+      return { success: true, data: mapDbAuctionToAuction(data) };
     } catch (error) {
       return {
         success: false,
@@ -201,7 +220,7 @@ export const auctionService: AuctionService = {
 
       if (error) throw error;
 
-      return { success: true, data: (data || []) as Auction[] };
+      return { success: true, data: (data || []).map(mapDbAuctionToAuction) };
     } catch (error) {
       return {
         success: false,
@@ -245,7 +264,7 @@ export const auctionService: AuctionService = {
 
       if (error) throw error;
 
-      return { success: true, data: data as Auction };
+      return { success: true, data: mapDbAuctionToAuction(data) };
     } catch (error) {
       return {
         success: false,

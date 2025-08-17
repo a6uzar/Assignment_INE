@@ -283,7 +283,7 @@ export default function AuctionRoom() {
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             {/* Bidding Panel */}
-            <BiddingPanel auction={auction} bids={bids} />
+            <BiddingPanel auction={auction} bids={bids} auctionId={auction.id} />
 
             {/* Live Activity Feed */}
             <Card>

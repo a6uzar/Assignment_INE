@@ -114,7 +114,7 @@ const MyBids = () => {
   };
 
   const hasWon = (bid: Bid) => {
-    return bid.auction?.winner_id === user?.id;
+    return (bid.auction as any)?.winner_id === user?.id;
   };
 
   if (!user) {

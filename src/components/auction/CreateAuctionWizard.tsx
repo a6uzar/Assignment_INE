@@ -12,13 +12,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Upload, 
-  Calendar, 
-  DollarSign, 
-  Package, 
+import {
+  ChevronLeft,
+  ChevronRight,
+  Upload,
+  Calendar,
+  DollarSign,
+  Package,
   CheckCircle,
   AlertCircle,
   Clock,
@@ -29,6 +29,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { auctionService } from '@/lib/api/auctions';
+import { getCategoriesWithFallback } from '@/lib/categoryUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { ensureUserProfile } from '@/utils/userProfile';
@@ -92,7 +93,7 @@ const CATEGORIES = [
 export function CreateAuctionWizard() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [categories, setCategories] = useState<Array<{id: string, name: string, icon: string}>>([]);
+  const [categories, setCategories] = useState<Array<{ id: string, name: string, icon: string }>>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -102,20 +103,8 @@ export function CreateAuctionWizard() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const { data, error } = await supabase
-          .from('categories')
-          .select('id, name, icon')
-          .eq('is_active', true)
-          .order('name');
-
-        if (error) {
-          console.error('Error fetching categories:', error);
-          // Use fallback categories if database fetch fails
-          setCategories(FALLBACK_CATEGORIES);
-        } else {
-          // Always use fallback categories to ensure emoji icons are displayed
-          setCategories(FALLBACK_CATEGORIES);
-        }
+        const categoriesData = await getCategoriesWithFallback();
+        setCategories(categoriesData);
       } catch (error) {
         console.error('Error fetching categories:', error);
         setCategories(FALLBACK_CATEGORIES);
@@ -305,16 +294,15 @@ export function CreateAuctionWizard() {
                       whileTap={{ scale: 0.98 }}
                     >
                       <div
-                        className={`border-2 rounded-lg p-4 cursor-pointer transition-colors text-center min-h-[120px] flex flex-col items-center justify-center ${
-                          watchedValues.category_id === category.id
+                        className={`border-2 rounded-lg p-4 cursor-pointer transition-colors text-center min-h-[120px] flex flex-col items-center justify-center ${watchedValues.category_id === category.id
                             ? 'border-primary bg-primary/10'
                             : 'border-muted hover:border-primary/50'
-                        }`}
+                          }`}
                         onClick={() => setValue('category_id', category.id)}
                       >
-                        <div 
-                          className="text-4xl mb-2" 
-                          style={{ 
+                        <div
+                          className="text-4xl mb-2"
+                          style={{
                             fontSize: '3rem',
                             lineHeight: '1',
                             fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif'
@@ -444,21 +432,20 @@ export function CreateAuctionWizard() {
                 {watchedValues.reserve_price && (
                   <div className="flex justify-between">
                     <span>Reserve Price:</span>
-                    <span className={`font-semibold ${
-                      watchedValues.reserve_price < (watchedValues.starting_price || 0) 
-                        ? 'text-destructive' 
+                    <span className={`font-semibold ${watchedValues.reserve_price < (watchedValues.starting_price || 0)
+                        ? 'text-destructive'
                         : 'text-orange-500'
-                    }`}>
+                      }`}>
                       ${watchedValues.reserve_price.toLocaleString()}
                     </span>
                   </div>
                 )}
-                {watchedValues.reserve_price && watchedValues.starting_price && 
-                 watchedValues.reserve_price < watchedValues.starting_price && (
-                  <div className="text-sm text-destructive bg-destructive/10 p-2 rounded">
-                    ⚠️ Reserve price must be at least ${watchedValues.starting_price.toLocaleString()}
-                  </div>
-                )}
+                {watchedValues.reserve_price && watchedValues.starting_price &&
+                  watchedValues.reserve_price < watchedValues.starting_price && (
+                    <div className="text-sm text-destructive bg-destructive/10 p-2 rounded">
+                      ⚠️ Reserve price must be at least ${watchedValues.starting_price.toLocaleString()}
+                    </div>
+                  )}
               </CardContent>
             </Card>
           </motion.div>

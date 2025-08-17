@@ -144,6 +144,7 @@ export const VirtualizedAuctionList = memo(({
   return (
     <List
       height={height}
+      width="100%"
       itemCount={auctions.length}
       itemSize={120} // Height of each auction row
       itemData={itemData}

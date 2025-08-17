@@ -178,24 +178,30 @@ export function useBiddingPressure({
                         amount: payload.new.amount,
                     };
 
-                    setRecentActivity(prev => [newActivity, ...prev.slice(0, 99)]);
-
-                    // Recalculate pressure immediately
-                    const updatedActivities = [newActivity, ...recentActivity];
-                    const newPressureMetrics = calculatePressureMetrics(updatedActivities);
-                    setBiddingPressure(newPressureMetrics);
+                    setRecentActivity(prev => {
+                        const updatedActivities = [newActivity, ...prev.slice(0, 99)];
+                        
+                        // Calculate pressure with updated activities to avoid stale closure
+                        const newPressureMetrics = calculatePressureMetrics(updatedActivities);
+                        setBiddingPressure(newPressureMetrics);
+                        
+                        return updatedActivities;
+                    });
                 }
             )
             .subscribe();
 
-        // Periodic updates
-        const interval = setInterval(fetchBiddingActivity, updateInterval);
+        // Periodic updates - only if polling is needed
+        let interval: NodeJS.Timeout | null = null;
+        if (updateInterval > 0) {
+            interval = setInterval(fetchBiddingActivity, updateInterval);
+        }
 
         return () => {
             supabase.removeChannel(channel);
-            clearInterval(interval);
+            if (interval) clearInterval(interval);
         };
-    }, [auctionId, enabled, fetchBiddingActivity, updateInterval, recentActivity, calculatePressureMetrics]);
+    }, [auctionId, enabled, fetchBiddingActivity, updateInterval, calculatePressureMetrics]);
 
     // Get pressure trend (increasing, stable, decreasing)
     const getPressureTrend = useCallback(() => {

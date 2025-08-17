@@ -191,27 +191,34 @@ export function useRealtimeBidding({
 
   // Auto-extend auction if bid placed in last minutes
   const handleAutoExtend = useCallback(async () => {
-    if (!state.auction || !state.isAuctionActive) return;
+    // Get current state values to avoid stale closures
+    setState(currentState => {
+      if (!currentState.auction || !currentState.isAuctionActive) return currentState;
 
-    const timeLeft = state.timeRemaining;
-    const autoExtendThreshold = (state.auction.auto_extend_minutes || 5) * 60 * 1000;
+      const timeLeft = currentState.timeRemaining;
+      const autoExtendThreshold = (currentState.auction.auto_extend_minutes || 5) * 60 * 1000;
 
-    if (timeLeft > 0 && timeLeft < autoExtendThreshold) {
-      const newEndTime = new Date(Date.now() + autoExtendThreshold);
-      
-      await supabase
-        .from('auctions')
-        .update({ end_time: newEndTime.toISOString() })
-        .eq('id', auctionId);
-
-      if (enableNotifications) {
-        toast({
-          title: "Auction Extended",
-          description: `Auction extended by ${state.auction.auto_extend_minutes} minutes due to recent bidding activity.`,
-        });
+      if (timeLeft > 0 && timeLeft < autoExtendThreshold) {
+        const newEndTime = new Date(Date.now() + autoExtendThreshold);
+        
+        // Update auction end time
+        supabase
+          .from('auctions')
+          .update({ end_time: newEndTime.toISOString() })
+          .eq('id', auctionId)
+          .then(() => {
+            if (enableNotifications) {
+              toast({
+                title: "Auction Extended",
+                description: `Auction extended by ${currentState.auction!.auto_extend_minutes} minutes due to recent bidding activity.`,
+              });
+            }
+          });
       }
-    }
-  }, [state.auction, state.isAuctionActive, state.timeRemaining, auctionId, enableNotifications, toast]);
+      
+      return currentState;
+    });
+  }, [auctionId, enableNotifications, toast]);
 
   // Set up real-time subscriptions
   useEffect(() => {

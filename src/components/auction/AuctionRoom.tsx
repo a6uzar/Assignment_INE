@@ -102,6 +102,7 @@ export function AuctionRoom() {
 
     const { biddingPressure, activeBidders, intensityScore } = useBiddingPressure({
         auctionId: id || '',
+        updateInterval: 0, // Disable polling, rely on real-time subscriptions only
     });
 
     const { events, stats, addExtensionEvent, addWarningEvent } = useAuctionActivity(

@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { Header } from "@/components/layout/Header";
 import { DevUtils } from "@/components/dev/DevUtils";
+import SystemDebug from "./pages/SystemDebug";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Auctions from "./pages/Auctions";
@@ -40,6 +41,7 @@ function AppContent() {
           <Route path="/create-auction" element={<CreateAuction />} />
           <Route path="/my-auctions" element={<MyAuctions />} />
           <Route path="/my-bids" element={<MyBids />} />
+          <Route path="/debug" element={<SystemDebug />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -583,7 +583,7 @@ export function LegacyBiddingPanel({ auction, bids, onBidPlaced, className }: {
     try {
       const { data: newBid, error } = await bidService.placeBid({
         auctionId: auction.id,
-        bidder_id: user.id,
+        userId: user.id,
         amount,
       });
 

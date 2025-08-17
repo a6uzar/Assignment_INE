@@ -113,12 +113,28 @@ export function AdminDashboard() {
   const [showUserDialog, setShowUserDialog] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   const { user } = useAuth();
   const { toast } = useToast();
 
   // Check if user is admin
-  const isAdmin = user?.is_admin;
+  const isAdmin = userProfile?.is_admin;
+
+  useEffect(() => {
+    if (user) {
+      // Fetch user profile to check admin status
+      const fetchUserProfile = async () => {
+        const { data } = await supabase
+          .from('users')
+          .select('is_admin')
+          .eq('id', user.id)
+          .single();
+        setUserProfile(data);
+      };
+      fetchUserProfile();
+    }
+  }, [user]);
 
   useEffect(() => {
     if (isAdmin) {
@@ -149,13 +165,13 @@ export function AdminDashboard() {
   };
 
   const fetchStats = async () => {
-    const { data: userCount } = await supabase
+    const { count: userCount } = await supabase
       .from('users')
-      .select('id', { count: 'exact', head: true });
+      .select('*', { count: 'exact', head: true });
 
-    const { data: auctionCount } = await supabase
+    const { count: auctionCount } = await supabase
       .from('auctions')
-      .select('id', { count: 'exact', head: true })
+      .select('*', { count: 'exact', head: true })
       .eq('status', 'active');
 
     const { data: transactions } = await supabase
@@ -165,16 +181,16 @@ export function AdminDashboard() {
 
     const totalRevenue = transactions?.reduce((sum, t) => sum + t.amount, 0) || 0;
 
-    const { data: salesCount } = await supabase
+    const { count: salesCount } = await supabase
       .from('transactions')
-      .select('id', { count: 'exact', head: true })
+      .select('*', { count: 'exact', head: true })
       .eq('status', 'completed');
 
     setStats({
-      totalUsers: userCount?.count || 0,
-      activeAuctions: auctionCount?.count || 0,
+      totalUsers: userCount || 0,
+      activeAuctions: auctionCount || 0,
       totalRevenue,
-      completedSales: salesCount?.count || 0,
+      completedSales: salesCount || 0,
       userGrowth: 12.5, // Mock data - would calculate from historical data
       auctionGrowth: 8.3,
       revenueGrowth: 15.7,
@@ -200,7 +216,7 @@ export function AdminDashboard() {
       .from('auctions')
       .select(`
         *,
-        users!auctions_seller_id_fkey(full_name),
+        seller:users!auctions_seller_id_fkey(full_name),
         categories(name)
       `)
       .order('created_at', { ascending: false })
@@ -218,8 +234,8 @@ export function AdminDashboard() {
       .from('transactions')
       .select(`
         *,
-        auctions(title),
-        users!transactions_seller_id_fkey(full_name),
+        auction:auctions!transactions_auction_id_fkey(title),
+        seller:users!transactions_seller_id_fkey(full_name),
         buyer:users!transactions_buyer_id_fkey(full_name)
       `)
       .order('created_at', { ascending: false })
@@ -643,7 +659,7 @@ export function AdminDashboard() {
                   {auctions.map((auction) => (
                     <TableRow key={auction.id}>
                       <TableCell className="font-medium">{auction.title}</TableCell>
-                      <TableCell>{auction.users?.full_name}</TableCell>
+                      <TableCell>{(auction as any).seller?.full_name || auction.seller_id}</TableCell>
                       <TableCell>{getStatusBadge(auction.status)}</TableCell>
                       <TableCell>${auction.current_price.toLocaleString()}</TableCell>
                       <TableCell>
@@ -714,9 +730,9 @@ export function AdminDashboard() {
                       <TableCell className="font-mono text-sm">
                         {transaction.id.substring(0, 8)}...
                       </TableCell>
-                      <TableCell>{transaction.auctions?.title}</TableCell>
-                      <TableCell>{transaction.users?.full_name}</TableCell>
-                      <TableCell>{transaction.buyer?.full_name}</TableCell>
+                      <TableCell>{(transaction as any).auction?.title || transaction.auction_id}</TableCell>
+                      <TableCell>{(transaction as any).seller?.full_name || transaction.seller_id}</TableCell>
+                      <TableCell>{(transaction as any).buyer?.full_name || transaction.buyer_id}</TableCell>
                       <TableCell>${transaction.amount.toLocaleString()}</TableCell>
                       <TableCell>{getStatusBadge(transaction.status)}</TableCell>
                       <TableCell>

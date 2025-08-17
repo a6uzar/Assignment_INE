@@ -180,8 +180,10 @@ export function SellerDecisionPanel({
         seller_id: auction.seller_id,
         buyer_id: highestBid!.bidder_id,
         amount: highestBid!.amount,
+        commission_amount: 0,
+        total_amount: highestBid!.amount,
+        shipping_cost: 0,
         status: 'pending',
-        transaction_type: 'sale',
       });
 
     if (transactionError) throw transactionError;

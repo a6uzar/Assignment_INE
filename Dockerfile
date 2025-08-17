@@ -32,8 +32,8 @@ COPY --from=builder /app/package*.json ./
 # Copy server file
 COPY server.js ./
 
-# Install production dependencies including express only (removing compression for now)
-RUN npm install express@^4.18.2 --production
+# Install production dependencies from package.json
+RUN npm ci --only=production
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs

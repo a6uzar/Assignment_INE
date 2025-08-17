@@ -1,0 +1,43 @@
+name: Keep Render Service Alive
+
+on:
+  schedule:
+    # Run every 5 minutes (*/5 * * * *)
+    - cron: '*/5 * * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Ping Render Service
+        run: |
+          echo "🏓 Pinging live-bid-dash service at $(date)"
+          
+          # Ping the health endpoint
+          response=$(curl -s -w "%{http_code}" -o /tmp/response.txt https://live-bid-dash.onrender.com/health)
+          
+          if [ "$response" -eq 200 ]; then
+            echo "✅ Ping successful! Response:"
+            cat /tmp/response.txt
+            echo ""
+            echo "Service is alive and responding"
+          else
+            echo "❌ Ping failed with status code: $response"
+            echo "Response:"
+            cat /tmp/response.txt
+            exit 1
+          fi
+          
+      - name: Log Success
+        if: success()
+        run: |
+          echo "🎉 Keep-alive ping completed successfully"
+          echo "Next ping will be in 5 minutes"
+          
+      - name: Log Failure
+        if: failure()
+        run: |
+          echo "💥 Keep-alive ping failed"
+          echo "Check Render service status"

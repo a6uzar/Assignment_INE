@@ -113,7 +113,8 @@ export function CreateAuctionWizard() {
           // Use fallback categories if database fetch fails
           setCategories(FALLBACK_CATEGORIES);
         } else {
-          setCategories(data || []);
+          // Always use fallback categories to ensure emoji icons are displayed
+          setCategories(FALLBACK_CATEGORIES);
         }
       } catch (error) {
         console.error('Error fetching categories:', error);
@@ -304,14 +305,23 @@ export function CreateAuctionWizard() {
                       whileTap={{ scale: 0.98 }}
                     >
                       <div
-                        className={`border-2 rounded-lg p-3 cursor-pointer transition-colors text-center ${
+                        className={`border-2 rounded-lg p-4 cursor-pointer transition-colors text-center min-h-[120px] flex flex-col items-center justify-center ${
                           watchedValues.category_id === category.id
                             ? 'border-primary bg-primary/10'
                             : 'border-muted hover:border-primary/50'
                         }`}
                         onClick={() => setValue('category_id', category.id)}
                       >
-                        <div className="text-2xl mb-1">{category.icon}</div>
+                        <div 
+                          className="text-4xl mb-2" 
+                          style={{ 
+                            fontSize: '3rem',
+                            lineHeight: '1',
+                            fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif'
+                          }}
+                        >
+                          {category.icon}
+                        </div>
                         <p className="text-sm font-medium">{category.name}</p>
                       </div>
                     </motion.div>

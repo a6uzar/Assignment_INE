@@ -121,3 +121,18 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* Emoji font support for consistent rendering across platforms */
+.emoji {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", sans-serif;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  line-height: 1;
+}
+
+/* Ensure emojis render properly */
+span[style*="Apple Color Emoji"] {
+  -webkit-font-feature-settings: "liga" off;
+  font-feature-settings: "liga" off;
+}

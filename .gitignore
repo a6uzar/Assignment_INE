@@ -182,6 +182,7 @@ typings/
 DATABASE_RESET_INSTRUCTIONS.md
 EMAIL_REDIRECT_FIX.md
 MANUAL_CLEANUP.sql
+RENDER_KEEPALIVE_GUIDE.md
 
 # Test utilities
 src/lib/adminUtils.ts

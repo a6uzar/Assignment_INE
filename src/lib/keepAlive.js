@@ -1,12 +1,14 @@
-// Keep-alive service to prevent Render free tier from sleeping
-// This will ping your own server every 14 minutes to keep it awake
+// Enhanced Keep-alive service with better logging and external cron support
+import fetch from 'node-fetch';
 
 class KeepAliveService {
   constructor() {
     this.interval = null;
     this.isRunning = false;
-    // Ping every 5 minutes (300000 ms) - more frequent to ensure server stays awake
-    this.pingInterval = 5 * 60 * 1000;
+    this.pingInterval = 5 * 60 * 1000; // 5 minutes
+    this.pingCount = 0;
+    this.lastPingTime = null;
+    this.failureCount = 0;
   }
 
   start() {
@@ -24,35 +26,53 @@ class KeepAliveService {
     }
 
     this.isRunning = true;
-    console.log('🔄 KeepAlive service started - pinging every 5 minutes');
+    console.log(`🔄 KeepAlive service started - pinging ${siteUrl}/health every 5 minutes`);
 
     this.interval = setInterval(async () => {
-      try {
-        const response = await fetch(`${siteUrl}/health`);
-        const data = await response.json();
-        console.log(`✅ KeepAlive ping successful at ${new Date().toISOString()}`, {
-          status: data.status,
-          uptime: Math.floor(data.uptime / 60) + ' minutes'
-        });
-      } catch (error) {
-        console.error('❌ KeepAlive ping failed:', error.message);
-      }
+      await this.ping();
     }, this.pingInterval);
 
-    // Initial ping after 5 seconds
+    // Initial ping after 10 seconds
     setTimeout(() => {
       this.ping();
-    }, 5000);
+    }, 10000);
   }
 
   async ping() {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const startTime = Date.now();
+    
     try {
-      const response = await fetch(`${siteUrl}/health`);
+      console.log(`🏓 Sending KeepAlive ping #${this.pingCount + 1} at ${new Date().toISOString()}`);
+      
+      const response = await fetch(`${siteUrl}/health`, {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'KeepAlive-Service/1.0'
+        },
+        timeout: 30000 // 30 second timeout
+      });
+
+      const responseTime = Date.now() - startTime;
       const data = await response.json();
-      console.log(`🏓 Initial KeepAlive ping: ${data.status}`);
+      
+      this.pingCount++;
+      this.lastPingTime = new Date().toISOString();
+      this.failureCount = 0; // Reset failure count on success
+      
+      console.log(`✅ KeepAlive ping #${this.pingCount} successful (${responseTime}ms)`, {
+        status: data.status,
+        uptime: Math.floor(data.uptime / 60) + ' minutes',
+        timestamp: this.lastPingTime
+      });
+
     } catch (error) {
-      console.error('❌ Initial KeepAlive ping failed:', error.message);
+      this.failureCount++;
+      console.error(`❌ KeepAlive ping #${this.pingCount + 1} failed (${this.failureCount} failures):`, {
+        error: error.message,
+        timestamp: new Date().toISOString(),
+        responseTime: Date.now() - startTime + 'ms'
+      });
     }
   }
 

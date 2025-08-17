@@ -137,7 +137,7 @@ export function PostAuctionManagement({ auctionId, className }: PostAuctionManag
       };
 
       setAuction(auctionWithTransaction);
-      
+
       // Determine current step based on auction/transaction status
       if (transactionData) {
         if (transactionData.status === 'completed') {
@@ -167,7 +167,7 @@ export function PostAuctionManagement({ auctionId, className }: PostAuctionManag
   const handlePaymentComplete = async (paymentData: any) => {
     setShowPaymentProcessor(false);
     setCurrentStep(2);
-    
+
     // Send notification to seller
     await supabase
       .from('notifications')
@@ -415,8 +415,8 @@ Thank you for using Live Bid Dash!
                   <div className={cn(
                     "w-12 h-12 rounded-full flex items-center justify-center border-2 mb-2",
                     isCompleted ? "bg-green-500 border-green-500 text-white" :
-                    isActive ? "bg-primary border-primary text-white" :
-                    "bg-gray-100 border-gray-300 text-gray-400"
+                      isActive ? "bg-primary border-primary text-white" :
+                        "bg-gray-100 border-gray-300 text-gray-400"
                   )}>
                     <IconComponent className="h-5 w-5" />
                   </div>
@@ -583,8 +583,8 @@ Thank you for using Live Bid Dash!
                   rows={3}
                 />
               </div>
-              <Button 
-                onClick={submitFeedback} 
+              <Button
+                onClick={submitFeedback}
                 disabled={feedbackRating === 0}
                 className="w-full"
               >

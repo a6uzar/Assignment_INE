@@ -61,7 +61,7 @@ export function CounterOfferResponse({ auctionId, className }: CounterOfferRespo
 
   useEffect(() => {
     fetchCounterOffers();
-    
+
     // Set up real-time subscription for counter offers
     const subscription = supabase
       .channel(`counter-offers-${auctionId}`)
@@ -111,7 +111,7 @@ export function CounterOfferResponse({ auctionId, className }: CounterOfferRespo
       const now = new Date();
       const updatedOffers = data?.map(offer => ({
         ...offer,
-        status: new Date(offer.expires_at) < now && offer.status === 'pending' 
+        status: new Date(offer.expires_at) < now && offer.status === 'pending'
           ? 'expired' as const
           : offer.status
       })) || [];
@@ -131,7 +131,7 @@ export function CounterOfferResponse({ auctionId, className }: CounterOfferRespo
   };
 
   const handleCounterOfferResponse = async (
-    offerId: string, 
+    offerId: string,
     response: 'accepted' | 'rejected'
   ) => {
     setProcessingId(offerId);
@@ -148,7 +148,7 @@ export function CounterOfferResponse({ auctionId, className }: CounterOfferRespo
       // Update counter offer status
       const { error: updateError } = await supabase
         .from('counter_offers')
-        .update({ 
+        .update({
           status: response,
           response_message: responseMessage || undefined,
           responded_at: new Date().toISOString()
@@ -176,7 +176,7 @@ export function CounterOfferResponse({ auctionId, className }: CounterOfferRespo
         // Update auction current price
         const { error: auctionError } = await supabase
           .from('auctions')
-          .update({ 
+          .update({
             current_price: offer.counter_amount,
             highest_bid_id: null // Will be updated by triggers
           })
@@ -246,11 +246,11 @@ export function CounterOfferResponse({ auctionId, className }: CounterOfferRespo
   const getTimeRemaining = (expiresAt: string) => {
     const now = new Date();
     const expiry = new Date(expiresAt);
-    
+
     if (expiry < now) {
       return 'Expired';
     }
-    
+
     return `Expires ${formatDistanceToNow(expiry, { addSuffix: true })}`;
   };
 
@@ -384,7 +384,7 @@ export function CounterOfferResponse({ auctionId, className }: CounterOfferRespo
                         rows={3}
                       />
                     </div>
-                    
+
                     <div className="flex gap-3">
                       <Button
                         onClick={() => handleCounterOfferResponse(offer.id, 'accepted')}
@@ -398,7 +398,7 @@ export function CounterOfferResponse({ auctionId, className }: CounterOfferRespo
                         )}
                         Accept Counter Offer
                       </Button>
-                      
+
                       <Button
                         onClick={() => handleCounterOfferResponse(offer.id, 'rejected')}
                         disabled={isProcessing}

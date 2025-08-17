@@ -97,7 +97,7 @@ export function AuctionRoom() {
 
     // Enhanced hooks
     const isAuctionActive = auction?.status === 'active' && new Date(auction.end_time).getTime() > Date.now();
-    
+
     const { participants, watchers, participantCount, watcherCount } = useAuctionParticipants({
         auctionId: id || '',
         enabled: isAuctionActive, // Only enable when auction is active

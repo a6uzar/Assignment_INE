@@ -184,7 +184,7 @@ export function PaymentProcessor({
         });
 
       setPaymentStatus('success');
-      
+
       toast({
         title: "Payment Successful!",
         description: `Payment of $${totalAmount.toLocaleString()} has been processed.`,
@@ -200,7 +200,7 @@ export function PaymentProcessor({
     } catch (error: any) {
       console.error('Payment processing error:', error);
       setPaymentStatus('error');
-      
+
       toast({
         title: "Payment Failed",
         description: error.message || "Failed to process payment",
@@ -322,7 +322,7 @@ export function PaymentProcessor({
                   <div className="text-left">
                     <p className="font-medium">{method.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {method.processingFee > 0 
+                      {method.processingFee > 0
                         ? `${method.processingFee}% processing fee`
                         : "No processing fee"
                       }

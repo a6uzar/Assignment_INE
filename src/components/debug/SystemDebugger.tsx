@@ -28,8 +28,8 @@ export function SystemDebugger() {
   const { user } = useAuth();
 
   const updateCheck = (name: string, status: SystemCheck['status'], message: string, details?: any) => {
-    setChecks(prev => prev.map(check => 
-      check.name === name 
+    setChecks(prev => prev.map(check =>
+      check.name === name
         ? { ...check, status, message, details }
         : check
     ));
@@ -90,7 +90,7 @@ export function SystemDebugger() {
         // Timeout after 5 seconds
         setTimeout(() => reject(new Error('Subscription timeout')), 5000);
       });
-      
+
       supabase.removeChannel(channel);
     } catch (error) {
       updateCheck('Real-time Subscriptions', 'error', `Subscription error: ${error.message}`);
@@ -120,7 +120,7 @@ export function SystemDebugger() {
 
     try {
       console.log('Testing bid placement:', { auctionId: testAuctionId, amount: parseFloat(testBidAmount) });
-      
+
       // Direct database test
       const { data: auction, error: auctionError } = await supabase
         .from('auctions')
@@ -222,13 +222,13 @@ export function SystemDebugger() {
             <TabsTrigger value="bidding">Test Bidding</TabsTrigger>
             <TabsTrigger value="messaging">Test Messaging</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="system" className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">System Health Checks</h3>
               <Button onClick={runSystemChecks}>Refresh Checks</Button>
             </div>
-            
+
             <div className="space-y-2">
               {checks.map((check) => (
                 <div key={check.name} className="flex items-center justify-between p-3 border rounded-lg">
@@ -283,17 +283,17 @@ export function SystemDebugger() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Auction ID</label>
-                <Input 
-                  value={testAuctionId} 
+                <Input
+                  value={testAuctionId}
                   onChange={(e) => setTestAuctionId(e.target.value)}
                   placeholder="Enter auction ID to test with"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Bid Amount</label>
-                <Input 
+                <Input
                   type="number"
-                  value={testBidAmount} 
+                  value={testBidAmount}
                   onChange={(e) => setTestBidAmount(e.target.value)}
                   placeholder="Enter bid amount"
                 />
@@ -310,16 +310,16 @@ export function SystemDebugger() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Auction ID</label>
-                <Input 
-                  value={testAuctionId} 
+                <Input
+                  value={testAuctionId}
                   onChange={(e) => setTestAuctionId(e.target.value)}
                   placeholder="Enter auction ID to test with"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Test Message</label>
-                <Input 
-                  value={testMessage} 
+                <Input
+                  value={testMessage}
                   onChange={(e) => setTestMessage(e.target.value)}
                   placeholder="Enter test message"
                 />

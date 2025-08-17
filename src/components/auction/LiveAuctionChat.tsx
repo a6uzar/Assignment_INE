@@ -266,7 +266,7 @@ export function LiveAuctionChat({
                     };
 
                     setMessages(prev => [...prev, newDbMessage]);
-                    
+
                     toast({
                         title: "Message sent!",
                         duration: 1000,
@@ -362,7 +362,7 @@ export function LiveAuctionChat({
 
                     setMessages(prev => [...prev, newDbMessage]);
                     setShowEmojiPicker(false);
-                    
+
                     toast({
                         title: "Reaction sent!",
                         description: `You reacted with ${emoji}`,

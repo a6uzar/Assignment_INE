@@ -214,8 +214,8 @@ export function AutomatedEmailSystem({ className }: AutomatedEmailSystemProps) {
 
     try {
       // In a real implementation, this would update the database
-      setAutomations(prev => prev.map(automation => 
-        automation.id === id 
+      setAutomations(prev => prev.map(automation =>
+        automation.id === id
           ? { ...automation, isEnabled: enabled }
           : automation
       ));
@@ -386,7 +386,7 @@ export function AutomatedEmailSystem({ className }: AutomatedEmailSystemProps) {
                 <div className="bg-gray-50 rounded-lg p-3">
                   <p className="text-sm text-muted-foreground">Last Sent</p>
                   <p className="text-sm font-medium">
-                    {automation.lastSent 
+                    {automation.lastSent
                       ? new Date(automation.lastSent).toLocaleString()
                       : 'Never'
                     }
@@ -404,7 +404,7 @@ export function AutomatedEmailSystem({ className }: AutomatedEmailSystemProps) {
                   <strong>Subject:</strong> {automation.template.subject}
                 </p>
                 <div className="text-xs text-blue-600 bg-white rounded p-2 max-h-20 overflow-y-auto">
-                  <div dangerouslySetInnerHTML={{ 
+                  <div dangerouslySetInnerHTML={{
                     __html: automation.template.content.substring(0, 200) + '...'
                   }} />
                 </div>
@@ -458,12 +458,12 @@ export function AutomatedEmailSystem({ className }: AutomatedEmailSystemProps) {
                   <p className="text-sm text-muted-foreground">{activity.recipient}</p>
                 </div>
                 <div className="text-right">
-                  <Badge 
+                  <Badge
                     variant={activity.status === 'clicked' ? 'default' : 'outline'}
                     className={
                       activity.status === 'delivered' ? 'bg-blue-500' :
-                      activity.status === 'opened' ? 'bg-yellow-500' :
-                      activity.status === 'clicked' ? 'bg-green-500' : ''
+                        activity.status === 'opened' ? 'bg-yellow-500' :
+                          activity.status === 'clicked' ? 'bg-green-500' : ''
                     }
                   >
                     {activity.status}

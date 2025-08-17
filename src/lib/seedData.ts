@@ -31,7 +31,7 @@ const SAMPLE_DATA = {
       description: 'Gadgets and electronic devices'
     },
     {
-      id: 'cat-2', 
+      id: 'cat-2',
       name: 'Art & Collectibles',
       icon: '🎨',
       description: 'Fine art, collectibles, and rare items'

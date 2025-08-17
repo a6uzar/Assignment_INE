@@ -38,9 +38,9 @@ export function LiveParticipantsPanel({
         watcherCount,
         loading,
         error
-    } = useAuctionParticipants({ 
+    } = useAuctionParticipants({
         auctionId,
-        enabled: isActive 
+        enabled: isActive
     });
 
     if (loading) {

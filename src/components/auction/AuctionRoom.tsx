@@ -88,7 +88,7 @@ export function AuctionRoom() {
     const [error, setError] = useState<string | null>(null);
     const [isWatching, setIsWatching] = useState(false);
     const [showMobileActivity, setShowMobileActivity] = useState(false);
-    
+
     // Phase 3: Social & Engagement State
     const [showChat, setShowChat] = useState(true);
     const [showReactions, setShowReactions] = useState(true);
@@ -96,13 +96,17 @@ export function AuctionRoom() {
     const [activeTab, setActiveTab] = useState('activity');
 
     // Enhanced hooks
+    const isAuctionActive = auction?.status === 'active' && new Date(auction.end_time).getTime() > Date.now();
+    
     const { participants, watchers, participantCount, watcherCount } = useAuctionParticipants({
         auctionId: id || '',
+        enabled: isAuctionActive, // Only enable when auction is active
     });
 
     const { biddingPressure, activeBidders, intensityScore } = useBiddingPressure({
         auctionId: id || '',
         updateInterval: 0, // Disable polling, rely on real-time subscriptions only
+        enabled: isAuctionActive, // Only enable when auction is active
     });
 
     const { events, stats, addExtensionEvent, addWarningEvent } = useAuctionActivity(
@@ -289,19 +293,19 @@ export function AuctionRoom() {
                             {/* Phase 3: Social Actions in Header */}
                             <div className="hidden md:flex items-center gap-2">
                                 <SmartNotifications userId={user?.id} compact />
-                                <SocialSharing 
+                                <SocialSharing
                                     auction={{
-                                        ...auction, 
+                                        ...auction,
                                         start_price: auction.starting_price,
                                         seller_id: auction.seller.id,
                                         seller: {
                                             ...auction.seller,
                                             name: auction.seller.full_name
                                         }
-                                    }} 
-                                    compact 
+                                    }}
+                                    compact
                                 />
-                                
+
                                 <Button
                                     variant="ghost"
                                     size="sm"
@@ -310,7 +314,7 @@ export function AuctionRoom() {
                                 >
                                     <MessageCircle className="h-4 w-4" />
                                 </Button>
-                                
+
                                 <Button
                                     variant="ghost"
                                     size="sm"
@@ -367,7 +371,7 @@ export function AuctionRoom() {
                         {/* Phase 3: Emoji Reactions Overlay */}
                         {showReactions && auction.images && auction.images.length > 0 && (
                             <div className="relative -mt-6 z-10">
-                                <EmojiReactions 
+                                <EmojiReactions
                                     auctionId={auction.id}
                                     currentUserId={user?.id}
                                     compact
@@ -454,20 +458,20 @@ export function AuctionRoom() {
                             <div className="flex items-center justify-between gap-2">
                                 <div className="flex items-center gap-2">
                                     <SmartNotifications userId={user?.id} compact />
-                                    <SocialSharing 
+                                    <SocialSharing
                                         auction={{
-                                            ...auction, 
+                                            ...auction,
                                             start_price: auction.starting_price,
                                             seller_id: auction.seller.id,
                                             seller: {
                                                 ...auction.seller,
                                                 name: auction.seller.full_name
                                             }
-                                        }} 
-                                        compact 
+                                        }}
+                                        compact
                                     />
                                 </div>
-                                
+
                                 <Button
                                     variant="outline"
                                     onClick={() => setShowMobileActivity(!showMobileActivity)}
@@ -518,6 +522,7 @@ export function AuctionRoom() {
                                             <TabsContent value="participants" className="mt-4">
                                                 <LiveParticipantsPanel
                                                     auctionId={auction.id}
+                                                    isActive={isAuctionActive}
                                                 />
                                             </TabsContent>
 
@@ -532,20 +537,20 @@ export function AuctionRoom() {
 
                                             <TabsContent value="social" className="mt-4">
                                                 <div className="space-y-4">
-                                                    <SocialSharing 
+                                                    <SocialSharing
                                                         auction={{
-                                                            ...auction, 
+                                                            ...auction,
                                                             start_price: auction.starting_price,
                                                             seller_id: auction.seller.id,
                                                             seller: {
                                                                 ...auction.seller,
                                                                 name: auction.seller.full_name
                                                             }
-                                                        }} 
+                                                        }}
                                                         showFollowing={false}
                                                     />
-                                                    
-                                                    <EmojiReactions 
+
+                                                    <EmojiReactions
                                                         auctionId={auction.id}
                                                         currentUserId={user?.id}
                                                         compact
@@ -631,6 +636,7 @@ export function AuctionRoom() {
                             <TabsContent value="participants" className="mt-4">
                                 <LiveParticipantsPanel
                                     auctionId={auction.id}
+                                    isActive={isAuctionActive}
                                 />
                             </TabsContent>
 
@@ -647,21 +653,21 @@ export function AuctionRoom() {
 
                             <TabsContent value="social" className="mt-4">
                                 <div className="space-y-4">
-                                    <SocialSharing 
+                                    <SocialSharing
                                         auction={{
-                                            ...auction, 
+                                            ...auction,
                                             start_price: auction.starting_price,
                                             seller_id: auction.seller.id,
                                             seller: {
                                                 ...auction.seller,
                                                 name: auction.seller.full_name
                                             }
-                                        }} 
+                                        }}
                                         showFollowing={true}
                                     />
-                                    
+
                                     {showReactions && (
-                                        <EmojiReactions 
+                                        <EmojiReactions
                                             auctionId={auction.id}
                                             currentUserId={user?.id}
                                         />
@@ -704,7 +710,7 @@ export function AuctionRoom() {
 
                         {/* Phase 3: Smart Notifications Panel (Desktop) */}
                         <div className="hidden lg:block">
-                            <SmartNotifications 
+                            <SmartNotifications
                                 userId={user?.id}
                                 showSettings={true}
                             />

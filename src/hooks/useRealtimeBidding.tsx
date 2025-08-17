@@ -23,10 +23,10 @@ interface UseBiddingOptions {
   enableNotifications?: boolean;
 }
 
-export function useRealtimeBidding({ 
-  auctionId, 
-  autoRefresh = true, 
-  enableNotifications = true 
+export function useRealtimeBidding({
+  auctionId,
+  autoRefresh = true,
+  enableNotifications = true
 }: UseBiddingOptions) {
   const [state, setState] = useState<RealtimeBiddingState>({
     currentBid: null,
@@ -157,7 +157,7 @@ export function useRealtimeBidding({
       // Update auction current price
       await supabase
         .from('auctions')
-        .update({ 
+        .update({
           current_price: amount,
           bid_count: (state.auction.bid_count || 0) + 1
         })
@@ -200,7 +200,7 @@ export function useRealtimeBidding({
 
       if (timeLeft > 0 && timeLeft < autoExtendThreshold) {
         const newEndTime = new Date(Date.now() + autoExtendThreshold);
-        
+
         // Update auction end time
         supabase
           .from('auctions')
@@ -215,7 +215,7 @@ export function useRealtimeBidding({
             }
           });
       }
-      
+
       return currentState;
     });
   }, [auctionId, enableNotifications, toast]);
@@ -240,7 +240,7 @@ export function useRealtimeBidding({
         },
         async (payload) => {
           console.log('Real-time bid update:', payload);
-          
+
           if (payload.eventType === 'INSERT') {
             // New bid placed
             const { data: newBid } = await supabase
@@ -304,7 +304,7 @@ export function useRealtimeBidding({
 
   // Timer for countdown
   useEffect(() => {
-    if (!autoRefresh || !state.auction) return;
+    if (!autoRefresh || !state.auction || !state.isAuctionActive) return;
 
     const timer = setInterval(() => {
       const timeRemaining = new Date(state.auction!.end_time).getTime() - Date.now();
@@ -319,7 +319,7 @@ export function useRealtimeBidding({
       // Auto-end auction when time expires
       if (timeRemaining <= 0 && state.isAuctionActive) {
         setState(prev => ({ ...prev, isAuctionActive: false }));
-        
+
         if (enableNotifications) {
           toast({
             title: "Auction Ended",

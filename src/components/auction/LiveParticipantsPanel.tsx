@@ -22,12 +22,14 @@ interface LiveParticipantsPanelProps {
     auctionId: string;
     className?: string;
     compact?: boolean;
+    isActive?: boolean;
 }
 
 export function LiveParticipantsPanel({
     auctionId,
     className,
-    compact = false
+    compact = false,
+    isActive = true
 }: LiveParticipantsPanelProps) {
     const {
         participants,
@@ -36,7 +38,10 @@ export function LiveParticipantsPanel({
         watcherCount,
         loading,
         error
-    } = useAuctionParticipants({ auctionId });
+    } = useAuctionParticipants({ 
+        auctionId,
+        enabled: isActive 
+    });
 
     if (loading) {
         return (

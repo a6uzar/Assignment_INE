@@ -180,11 +180,11 @@ export function useBiddingPressure({
 
                     setRecentActivity(prev => {
                         const updatedActivities = [newActivity, ...prev.slice(0, 99)];
-                        
+
                         // Calculate pressure with updated activities to avoid stale closure
                         const newPressureMetrics = calculatePressureMetrics(updatedActivities);
                         setBiddingPressure(newPressureMetrics);
-                        
+
                         return updatedActivities;
                     });
                 }

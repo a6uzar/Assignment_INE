@@ -21,11 +21,13 @@ interface Watcher {
 interface UseAuctionParticipantsOptions {
     auctionId: string;
     enableRealtime?: boolean;
+    enabled?: boolean;
 }
 
 export function useAuctionParticipants({
     auctionId,
-    enableRealtime = true
+    enableRealtime = true,
+    enabled = true
 }: UseAuctionParticipantsOptions) {
     const [participants, setParticipants] = useState<Participant[]>([]);
     const [watchers, setWatchers] = useState<Watcher[]>([]);
@@ -182,7 +184,7 @@ export function useAuctionParticipants({
 
     // Real-time subscriptions
     useEffect(() => {
-        if (!enableRealtime || !auctionId) return;
+        if (!enableRealtime || !auctionId || !enabled) return;
 
         fetchParticipants();
         fetchWatchers();
@@ -209,11 +211,11 @@ export function useAuctionParticipants({
         return () => {
             supabase.removeChannel(bidsChannel);
         };
-    }, [auctionId, enableRealtime, fetchParticipants, fetchWatchers, addWatcher]);
+    }, [auctionId, enableRealtime, enabled, fetchParticipants, fetchWatchers, addWatcher]);
 
-    // Simulate periodic watcher count updates
+    // Simulate periodic watcher count updates - only for active auctions
     useEffect(() => {
-        if (!enableRealtime) return;
+        if (!enableRealtime || !enabled) return;
 
         const interval = setInterval(() => {
             setWatcherCount(prev => {
@@ -223,7 +225,7 @@ export function useAuctionParticipants({
         }, 10000); // Update every 10 seconds
 
         return () => clearInterval(interval);
-    }, [enableRealtime]);
+    }, [enableRealtime, enabled]);
 
     return {
         participants,

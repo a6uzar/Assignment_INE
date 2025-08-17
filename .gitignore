@@ -177,3 +177,11 @@ coverage/
 .sass-cache/
 connect.lock
 typings/
+
+# Temporary documentation and setup files
+DATABASE_RESET_INSTRUCTIONS.md
+EMAIL_REDIRECT_FIX.md
+MANUAL_CLEANUP.sql
+
+# Test utilities
+src/lib/adminUtils.ts

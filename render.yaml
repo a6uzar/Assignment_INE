@@ -7,12 +7,10 @@ services:
     branch: master
     repo: https://github.com/a6uzar/Assignment_INE.git
     dockerfilePath: ./Dockerfile
-    healthCheckPath: /health
+    healthCheckPath: /status
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 10000
       - key: VITE_SUPABASE_URL
         sync: false
       - key: VITE_SUPABASE_ANON_KEY

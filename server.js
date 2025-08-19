@@ -8,6 +8,9 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 10000;
 
+// Log the port being used for debugging
+console.log(`🔧 Starting server on PORT: ${PORT} (from env: ${process.env.PORT ? 'yes' : 'no, using default'})`);
+
 // Add compression and security headers
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -30,6 +33,11 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
+});
+
+// Simple status endpoint (backup health check)
+app.get('/status', (req, res) => {
+  res.status(200).send('OK');
 });
 
 // API readiness check (for container orchestration)

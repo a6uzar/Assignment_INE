@@ -55,12 +55,8 @@ COPY --chown=nextjs:nodejs server.js ./
 # Install production dependencies
 RUN npm ci --omit=dev --cache /tmp/.npm
 
-# Expose port (use environment variable)
-EXPOSE $PORT
-
-# Health check with improved timing
-HEALTHCHECK --interval=10s --timeout=3s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost:$PORT/ready || exit 1
+# Expose port
+EXPOSE 10000
 
 # Start the application
 CMD ["node", "server.js"]

@@ -26,18 +26,32 @@ app.use(express.static(path.join(__dirname, 'dist'), {
   lastModified: true
 }));
 
-// Health check endpoint
+// Simple status endpoint (primary health check - fastest response)
+app.get('/status', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  res.status(200).send('OK');
+});
+
+// Detailed health check endpoint
 app.get('/health', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
   res.status(200).json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+    uptime: process.uptime(),
+    memory: process.memoryUsage()
   });
 });
 
-// Simple status endpoint (backup health check)
-app.get('/status', (req, res) => {
-  res.status(200).send('OK');
+// Root health check (backup)
+app.get('/', (req, res, next) => {
+  // If request is from health check, respond quickly
+  const userAgent = req.get('User-Agent') || '';
+  if (userAgent.includes('Render') || userAgent.includes('health')) {
+    return res.status(200).send('OK');
+  }
+  // Otherwise serve the React app
+  next();
 });
 
 // API readiness check (for container orchestration)

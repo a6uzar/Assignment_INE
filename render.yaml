@@ -8,6 +8,15 @@ services:
     repo: https://github.com/a6uzar/Assignment_INE.git
     dockerfilePath: ./Dockerfile
     healthCheckPath: /status
+    # Deployment optimizations
+    buildFilter:
+      paths:
+        - Dockerfile
+        - package*.json
+        - src/**
+        - public/**
+        - "*.config.*"
+        - server.js
     envVars:
       - key: NODE_ENV
         value: production

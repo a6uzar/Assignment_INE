@@ -17,3 +17,19 @@ dist
 *.log
 .DS_Store
 Thumbs.db
+
+# Additional optimizations
+supabase/.branches
+supabase/.temp
+supabase/logs
+__tests__
+*.test.*
+*.spec.*
+.eslintrc*
+.prettierrc*
+jest.config.*
+tsconfig.json
+tsconfig.*.json
+.github
+Dockerfile
+.dockerignore

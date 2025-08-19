@@ -2,31 +2,41 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-// Automatic environment detection
-const isProduction = import.meta.env.PROD ||
-  window.location.hostname !== 'localhost' &&
-  window.location.hostname !== '127.0.0.1';
+// Get environment variables with comprehensive fallbacks
+const VITE_SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const VITE_SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Use production Supabase for deployed environments, local for development
-const SUPABASE_URL = isProduction
-  ? "https://rbsvkrlzxlqnvoxbvnvb.supabase.co"
-  : "http://127.0.0.1:54321";
+// Auto-detect environment
+const isProduction = import.meta.env.PROD || 
+  (typeof window !== 'undefined' && 
+   window.location.hostname !== 'localhost' && 
+   window.location.hostname !== '127.0.0.1');
 
-const SUPABASE_PUBLISHABLE_KEY = isProduction
-  ? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJic3Zrcmx6eGxxbnZveGJ2bnZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUyNzc1MjMsImV4cCI6MjA3MDg1MzUyM30.CKOCAkzs3cXlvNiIr-mfxHmWIg1ITJMbC5hQQqELSog"
-  : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0";
+// Determine final Supabase URL
+const SUPABASE_URL = VITE_SUPABASE_URL || 
+  (isProduction 
+    ? "https://rbsvkrlzxlqnvoxbvnvb.supabase.co"  // Production fallback
+    : "http://127.0.0.1:54321"                     // Development fallback
+  );
 
-// Only log in development
-if (!isProduction) {
-  console.log('🔧 Development Mode - Using Local Supabase:', SUPABASE_URL);
-} else {
-  console.log('🚀 Production Mode - Using Remote Supabase');
-}
+// Determine final Supabase key
+const SUPABASE_ANON_KEY = VITE_SUPABASE_ANON_KEY || 
+  (isProduction
+    ? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJic3Zrcmx6eGxxbnZveGJ2bnZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUyNzc1MjMsImV4cCI6MjA3MDg1MzUyM30.CKOCAkzs3cXlvNiIr-mfxHmWIg1ITJMbC5hQQqELSog"  // Production fallback
+    : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"    // Development fallback
+  );
+
+// Enhanced logging for debugging
+console.log('🔧 Supabase Configuration:');
+console.log(`   Environment: ${isProduction ? 'Production' : 'Development'}`);
+console.log(`   VITE_SUPABASE_URL: ${VITE_SUPABASE_URL ? 'set from env' : 'using fallback'}`);
+console.log(`   VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY ? 'set from env' : 'using fallback'}`);
+console.log(`   Final URL: ${SUPABASE_URL}`);
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     storage: localStorage,
     persistSession: true,

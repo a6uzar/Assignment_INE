@@ -1,5 +1,5 @@
 // Enhanced Keep-alive service with better logging and external cron support
-import fetch from 'node-fetch';
+// Using native fetch API (Node.js 18+)
 
 class KeepAliveService {
   constructor() {

@@ -36,7 +36,7 @@ ENV PORT=3000
 
 # Create non-root user for security first
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nextjs -u 1001 -G nodejs
+  adduser -S nextjs -u 1001 -G nodejs
 
 # Create app directory and set ownership
 WORKDIR /app

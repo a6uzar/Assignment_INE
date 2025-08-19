@@ -7,20 +7,20 @@ const VITE_SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const VITE_SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Auto-detect environment
-const isProduction = import.meta.env.PROD || 
-  (typeof window !== 'undefined' && 
-   window.location.hostname !== 'localhost' && 
-   window.location.hostname !== '127.0.0.1');
+const isProduction = import.meta.env.PROD ||
+  (typeof window !== 'undefined' &&
+    window.location.hostname !== 'localhost' &&
+    window.location.hostname !== '127.0.0.1');
 
 // Determine final Supabase URL
-const SUPABASE_URL = VITE_SUPABASE_URL || 
-  (isProduction 
+const SUPABASE_URL = VITE_SUPABASE_URL ||
+  (isProduction
     ? "https://rbsvkrlzxlqnvoxbvnvb.supabase.co"  // Production fallback
     : "http://127.0.0.1:54321"                     // Development fallback
   );
 
 // Determine final Supabase key
-const SUPABASE_ANON_KEY = VITE_SUPABASE_ANON_KEY || 
+const SUPABASE_ANON_KEY = VITE_SUPABASE_ANON_KEY ||
   (isProduction
     ? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJic3Zrcmx6eGxxbnZveGJ2bnZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUyNzc1MjMsImV4cCI6MjA3MDg1MzUyM30.CKOCAkzs3cXlvNiIr-mfxHmWIg1ITJMbC5hQQqELSog"  // Production fallback
     : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"    // Development fallback

@@ -34,7 +34,7 @@ app.get('/health', (req, res) => {
 
 // API readiness check (for container orchestration)
 app.get('/ready', (req, res) => {
-  res.status(200).json({ 
+  res.status(200).json({
     status: 'ready',
     env: process.env.NODE_ENV || 'not-set',
     port: PORT
@@ -73,7 +73,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`📁 Serving static files from: ${path.join(__dirname, 'dist')}`);
   console.log(`🏥 Health check available at: http://localhost:${PORT}/health`);
   console.log(`📊 Environment info available at: http://localhost:${PORT}/env-info`);
-  
+
   // Log environment variables status for debugging
   console.log('\n🔧 Environment Variables Status:');
   console.log(`   NODE_ENV: ${process.env.NODE_ENV || 'not-set'}`);

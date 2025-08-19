@@ -96,11 +96,6 @@ export function Header() {
                       Notifications
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/user-repair" className="cursor-pointer text-orange-600">
-                      🔧 User Repair
-                    </Link>
-                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />

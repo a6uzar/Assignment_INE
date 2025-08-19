@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { auctionWatchersAPI } from '@/lib/api/auctionWatchers';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import {
@@ -450,30 +451,12 @@ export function SocialSharing({
         if (!user) return;
 
         try {
-            if (isWatchingAuction) {
-                // Stop watching
-                const { error } = await supabase
-                    .from('auction_watchers')
-                    .delete()
-                    .eq('auction_id', auction.id)
-                    .eq('user_id', user.id);
+            const { error } = await auctionWatchersAPI.toggleWatch(auction.id, user.id);
 
-                if (error) throw error;
+            if (error) throw error;
 
-                setIsWatchingAuction(false);
-            } else {
-                // Start watching
-                const { error } = await supabase
-                    .from('auction_watchers')
-                    .insert({
-                        auction_id: auction.id,
-                        user_id: user.id,
-                    });
-
-                if (error) throw error;
-
-                setIsWatchingAuction(true);
-            }
+            // Toggle the state
+            setIsWatchingAuction(!isWatchingAuction);
 
             toast({
                 title: isWatchingAuction ? "Stopped watching" : "Now watching",

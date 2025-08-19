@@ -673,8 +673,8 @@ export function LiveAuctionChat({
     }
 
     return (
-        <Card className={cn("flex flex-col h-96", className)}>
-            <CardHeader className="pb-3">
+        <Card className={cn("flex flex-col", className)} style={{ height: '500px' }}>
+            <CardHeader className="pb-3 flex-shrink-0">
                 <CardTitle className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <MessageCircle className="h-5 w-5" />
@@ -696,7 +696,7 @@ export function LiveAuctionChat({
                 </CardTitle>
             </CardHeader>
 
-            <CardContent className="flex-1 flex flex-col p-0">
+            <CardContent className="flex flex-col p-0 flex-1 min-h-0">
                 {/* Pinned Messages */}
                 {pinnedMessages.length > 0 && (
                     <div className="px-4 py-2 bg-yellow-50 border-b">
@@ -713,94 +713,98 @@ export function LiveAuctionChat({
                 )}
 
                 {/* Messages Area */}
-                <ScrollArea className="flex-1 px-4 py-2">
-                    <div className="space-y-3">
-                        <AnimatePresence initial={false}>
-                            {messages.map((message) => {
-                                const isOwn = message.user_id === currentUserId;
-                                const isEmoji = message.message_type === 'emoji';
-                                const isSystem = message.message_type === 'system';
+                <div className="flex-1 min-h-0 flex flex-col">
+                    <ScrollArea className="flex-1 chat-scroll-area" style={{ height: '350px' }}>
+                        <div className="px-4 py-2 chat-messages-container">
+                            <div className="space-y-3 max-w-full">
+                                <AnimatePresence initial={false}>
+                                    {messages.map((message) => {
+                                        const isOwn = message.user_id === currentUserId;
+                                        const isEmoji = message.message_type === 'emoji';
+                                        const isSystem = message.message_type === 'system';
 
-                                return (
-                                    <motion.div
-                                        key={message.id}
-                                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                                        exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                                        transition={{ duration: 0.2 }}
-                                        className={cn(
-                                            "flex gap-2",
-                                            isOwn && !isSystem && "flex-row-reverse",
-                                            isSystem && "justify-center"
-                                        )}
-                                    >
-                                        {!isSystem && (
-                                            <Avatar className="h-8 w-8 flex-shrink-0">
-                                                <AvatarImage src={message.user.avatar_url} />
-                                                <AvatarFallback className="text-xs">
-                                                    {message.user.full_name.charAt(0)}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                        )}
+                                        return (
+                                            <motion.div
+                                                key={message.id}
+                                                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                                                transition={{ duration: 0.2 }}
+                                                className={cn(
+                                                    "flex gap-2 chat-message-wrapper",
+                                                    isOwn && !isSystem && "flex-row-reverse",
+                                                    isSystem && "justify-center"
+                                                )}
+                                            >
+                                                {!isSystem && (
+                                                    <Avatar className="h-8 w-8 flex-shrink-0">
+                                                        <AvatarImage src={message.user.avatar_url} />
+                                                        <AvatarFallback className="text-xs">
+                                                            {message.user.full_name.charAt(0)}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                )}
 
-                                        <div className={cn("flex flex-col", isOwn && !isSystem && "items-end")}>
-                                            {!isSystem && (
-                                                <div className={cn(
-                                                    "flex items-center gap-2 mb-1",
-                                                    isOwn && "flex-row-reverse"
-                                                )}>
-                                                    <span className="text-xs font-medium text-gray-600">
-                                                        {isOwn ? 'You' : message.user.full_name}
-                                                    </span>
-                                                    {message.user.is_verified && (
-                                                        <Shield className="h-3 w-3 text-blue-500" />
+                                                <div className={cn("flex flex-col message-container", isOwn && !isSystem && "items-end")}>
+                                                    {!isSystem && (
+                                                        <div className={cn(
+                                                            "flex items-center gap-2 mb-1",
+                                                            isOwn && "flex-row-reverse"
+                                                        )}>
+                                                            <span className="text-xs font-medium text-gray-600 truncate">
+                                                                {isOwn ? 'You' : message.user.full_name}
+                                                            </span>
+                                                            {message.user.is_verified && (
+                                                                <Shield className="h-3 w-3 text-blue-500 flex-shrink-0" />
+                                                            )}
+                                                            <span className="text-xs text-gray-400 flex-shrink-0">
+                                                                {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+                                                            </span>
+                                                            {message.is_pinned && (
+                                                                <Pin className="h-3 w-3 text-yellow-500 flex-shrink-0" />
+                                                            )}
+                                                        </div>
                                                     )}
-                                                    <span className="text-xs text-gray-400">
-                                                        {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
-                                                    </span>
-                                                    {message.is_pinned && (
-                                                        <Pin className="h-3 w-3 text-yellow-500" />
-                                                    )}
+
+                                                    <div className={cn(getMessageStyle(message.message_type, isOwn), "message-bubble chat-message-content")}>
+                                                        {message.message}
+                                                    </div>
                                                 </div>
-                                            )}
+                                            </motion.div>
+                                        );
+                                    })}
+                                </AnimatePresence>
 
-                                            <div className={getMessageStyle(message.message_type, isOwn)}>
-                                                {message.message}
-                                            </div>
+                                {/* Typing Indicators */}
+                                {typingUsers.length > 0 && (
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        className="flex items-center gap-2 text-xs text-gray-500"
+                                    >
+                                        <div className="flex gap-1">
+                                            <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" />
+                                            <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                                            <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
                                         </div>
+                                        <span>
+                                            {typingUsers.length === 1
+                                                ? 'Someone is typing...'
+                                                : `${typingUsers.length} people are typing...`
+                                            }
+                                        </span>
                                     </motion.div>
-                                );
-                            })}
-                        </AnimatePresence>
+                                )}
 
-                        {/* Typing Indicators */}
-                        {typingUsers.length > 0 && (
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                className="flex items-center gap-2 text-xs text-gray-500"
-                            >
-                                <div className="flex gap-1">
-                                    <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" />
-                                    <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                                    <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                                </div>
-                                <span>
-                                    {typingUsers.length === 1
-                                        ? 'Someone is typing...'
-                                        : `${typingUsers.length} people are typing...`
-                                    }
-                                </span>
-                            </motion.div>
-                        )}
-
-                        <div ref={messagesEndRef} />
-                    </div>
-                </ScrollArea>
+                                <div ref={messagesEndRef} />
+                            </div>
+                        </div>
+                    </ScrollArea>
+                </div>
 
                 {/* Input Area */}
                 {isAuctionActive && user && (
-                    <div className="px-4 py-3 border-t bg-gray-50">
+                    <div className="px-4 py-3 border-t bg-gray-50 flex-shrink-0">
                         <div className="flex gap-2">
                             <div className="relative flex-1">
                                 <Input
@@ -858,7 +862,7 @@ export function LiveAuctionChat({
                 )}
 
                 {!isAuctionActive && (
-                    <div className="px-4 py-3 border-t bg-gray-50 text-center text-sm text-gray-500">
+                    <div className="px-4 py-3 border-t bg-gray-50 text-center text-sm text-gray-500 flex-shrink-0">
                         Chat is disabled for inactive auctions
                     </div>
                 )}

@@ -67,7 +67,6 @@ export function useRealtimeBidding({
           users(full_name, avatar_url)
         `)
         .eq('auction_id', auctionId)
-        .eq('status', 'active')
         .order('amount', { ascending: false })
         .limit(50);
 

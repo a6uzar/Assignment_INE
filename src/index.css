@@ -57,19 +57,12 @@ All colors MUST be HSL.
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -131,8 +124,84 @@ All colors MUST be HSL.
   line-height: 1;
 }
 
+/* Enhanced emoji display for category icons */
+.emoji-display {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols", sans-serif;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  line-height: 1;
+  text-rendering: optimizeQuality;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 /* Ensure emojis render properly */
 span[style*="Apple Color Emoji"] {
   -webkit-font-feature-settings: "liga" off;
   font-feature-settings: "liga" off;
+}
+
+/* Chat message formatting to prevent overflow */
+.message-bubble {
+  max-width: calc(100% - 60px);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  white-space: pre-wrap;
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  line-break: anywhere;
+  word-break: break-all;
+}
+
+.message-container {
+  min-width: 0;
+  flex: 1;
+  max-width: calc(100% - 40px);
+  overflow: hidden;
+}
+
+.chat-message-content {
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: pre-wrap;
+  hyphens: auto;
+}
+
+/* Ensure chat scrollarea doesn't overflow */
+.chat-scroll-area {
+  max-width: 100%;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  max-height: 350px !important;
+  height: 350px !important;
+}
+
+.chat-scroll-area .space-y-3 {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Force chat container to respect boundaries */
+.chat-messages-container {
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: 100%;
+}
+
+.chat-message-wrapper {
+  max-width: 100%;
+  overflow-x: hidden;
+  word-break: break-word;
+}
+
+/* Ensure ScrollArea viewport respects height */
+.chat-scroll-area [data-radix-scroll-area-viewport] {
+  max-height: 350px !important;
+  height: 350px !important;
 }

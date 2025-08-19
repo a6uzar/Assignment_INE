@@ -137,7 +137,13 @@ export const auctionService = {
     } else {
       return supabase
         .from('auction_watchers')
-        .insert({ auction_id: auctionId, user_id: userId });
+        .upsert({
+          auction_id: auctionId,
+          user_id: userId
+        }, {
+          onConflict: 'user_id,auction_id',
+          ignoreDuplicates: true
+        });
     }
   },
 

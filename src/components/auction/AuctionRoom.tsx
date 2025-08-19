@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { auctionWatchersAPI } from '@/lib/api/auctionWatchers';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuctionParticipants } from '@/hooks/useAuctionParticipants';
@@ -141,14 +142,8 @@ export function AuctionRoom() {
 
                 // Check if user is watching
                 if (user) {
-                    const { data: watchData } = await supabase
-                        .from('auction_watchers')
-                        .select('id')
-                        .eq('auction_id', id)
-                        .eq('user_id', user.id)
-                        .single();
-
-                    setIsWatching(!!watchData);
+                    const { isWatching: userIsWatching } = await auctionWatchersAPI.isWatching(id, user.id);
+                    setIsWatching(userIsWatching);
                 }
 
             } catch (err) {
@@ -168,13 +163,10 @@ export function AuctionRoom() {
 
         const autoWatch = async () => {
             try {
-                await supabase
-                    .from('auction_watchers')
-                    .insert({
-                        auction_id: auction.id,
-                        user_id: user.id,
-                    });
-                setIsWatching(true);
+                const { error } = await auctionWatchersAPI.addWatcher(auction.id, user.id);
+                if (!error) {
+                    setIsWatching(true);
+                }
             } catch (error) {
                 console.error('Auto-watch failed:', error);
             }

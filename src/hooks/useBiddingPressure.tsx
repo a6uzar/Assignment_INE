@@ -125,7 +125,6 @@ export function useBiddingPressure({
                 .from('bids')
                 .select('bid_time, bidder_id, amount')
                 .eq('auction_id', auctionId)
-                .eq('status', 'active')
                 .gte('bid_time', twoHoursAgo)
                 .order('bid_time', { ascending: false })
                 .limit(100);

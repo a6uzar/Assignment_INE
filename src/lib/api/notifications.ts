@@ -67,11 +67,11 @@ export const notificationService = {
   ) {
     return supabase.rpc('create_notification', {
       p_user_id: userId,
-      p_auction_id: auctionId || null,
-      p_bid_id: bidId || null,
       p_type: type,
       p_title: title,
       p_message: message,
+      p_auction_id: auctionId || null,
+      p_bid_id: bidId || null,
       p_data: data || {}
     });
   },
@@ -102,7 +102,7 @@ export const notificationService = {
 
   // Get notifications by type
   async getNotificationsByType(
-    userId: string, 
+    userId: string,
     type: Database['public']['Enums']['notification_type']
   ) {
     return supabase

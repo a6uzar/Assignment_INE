@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useDropzone } from 'react-dropzone';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,7 +25,9 @@ import {
   Clock,
   MapPin,
   Truck,
-  Loader2
+  Loader2,
+  X,
+  Image
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -34,20 +37,37 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { ensureUserProfile } from '@/utils/userProfile';
 
-const auctionSchema = z.object({
+// Form input schema (what the form receives)
+const auctionFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
   description: z.string().min(20, 'Description must be at least 20 characters'),
   category_id: z.string().min(1, 'Please select a category'),
   starting_price: z.number().min(1, 'Starting price must be at least $1'),
   bid_increment: z.number().min(1, 'Bid increment must be at least $1'),
-  reserve_price: z.number().optional(),
+  reserve_price: z.string().optional().refine((val) => {
+    // Allow empty string or undefined
+    if (!val || val === '') return true;
+    // Check if it's a valid number
+    const num = parseFloat(val);
+    return !isNaN(num) && num >= 0;
+  }, {
+    message: "Reserve price must be a valid number greater than or equal to 0"
+  }),
   start_time: z.string().min(1, 'Please select a start time'),
   end_time: z.string().min(1, 'Please select an end time'),
   condition: z.string().optional(),
   location: z.string().optional(),
   shipping_cost: z.number().min(0, 'Shipping cost cannot be negative'),
   images: z.array(z.string()).default([]),
-}).refine((data) => {
+});
+
+// API submission schema (what gets sent to the API)
+const auctionSchema = auctionFormSchema.transform((data) => ({
+  ...data,
+  reserve_price: data.reserve_price && data.reserve_price !== '' && data.reserve_price !== '0'
+    ? parseFloat(data.reserve_price)
+    : undefined,
+})).refine((data) => {
   // Validate reserve price is greater than or equal to starting price
   if (data.reserve_price !== undefined && data.reserve_price !== null && data.reserve_price > 0) {
     return data.reserve_price >= data.starting_price;
@@ -58,7 +78,7 @@ const auctionSchema = z.object({
   path: ["reserve_price"],
 });
 
-type AuctionFormData = z.infer<typeof auctionSchema>;
+type AuctionFormData = z.infer<typeof auctionFormSchema>;
 
 const STEPS = [
   { id: 1, title: 'Basic Details', description: 'Item information and description' },
@@ -95,6 +115,9 @@ export function CreateAuctionWizard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<Array<{ id: string, name: string, icon: string }>>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [uploadingImages, setUploadingImages] = useState<boolean>(false);
+  const [imageUploadProgress, setImageUploadProgress] = useState<{ [key: string]: number }>({});
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -124,12 +147,146 @@ export function CreateAuctionWizard() {
     formState: { errors },
     trigger,
   } = useForm<AuctionFormData>({
-    resolver: zodResolver(auctionSchema),
+    resolver: zodResolver(auctionFormSchema),
     defaultValues: {
       shipping_cost: 0,
       images: [],
+      reserve_price: '', // Set as empty string instead of undefined
     },
   });
+
+  // Image upload functions
+  const uploadImageToSupabase = async (file: File): Promise<string> => {
+    try {
+      console.log('Starting upload for file:', file.name, 'Size:', file.size);
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = fileName;
+
+      console.log('Uploading to path:', filePath);
+
+      // Try to upload directly first
+      const { data, error } = await supabase.storage
+        .from('auction-images')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        console.error('Upload error:', error);
+
+        // If bucket doesn't exist, the migration should have created it
+        // But if it still fails, provide helpful error message
+        if (error.message.includes('Bucket not found')) {
+          throw new Error('Storage bucket not found. Please ensure database migrations have been applied.');
+        }
+
+        throw new Error(`Upload failed: ${error.message}`);
+      }
+
+      console.log('Upload successful:', data);
+
+      const { data: publicUrlData } = supabase.storage
+        .from('auction-images')
+        .getPublicUrl(filePath);
+
+      console.log('Public URL:', publicUrlData.publicUrl);
+      return publicUrlData.publicUrl;
+    } catch (error) {
+      console.error('Upload function error:', error);
+      throw error;
+    }
+  };
+
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    if (uploadedImages.length + acceptedFiles.length > 10) {
+      toast({
+        title: "Too many images",
+        description: "You can upload a maximum of 10 images",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadingImages(true);
+    const uploadPromises = acceptedFiles.map(async (file) => {
+      const fileId = `${file.name}-${Date.now()}`;
+      setImageUploadProgress(prev => ({ ...prev, [fileId]: 0 }));
+
+      try {
+        // Simulate upload progress
+        const progressInterval = setInterval(() => {
+          setImageUploadProgress(prev => ({
+            ...prev,
+            [fileId]: Math.min((prev[fileId] || 0) + 10, 90)
+          }));
+        }, 100);
+
+        const imageUrl = await uploadImageToSupabase(file);
+
+        clearInterval(progressInterval);
+        setImageUploadProgress(prev => ({ ...prev, [fileId]: 100 }));
+
+        setTimeout(() => {
+          setImageUploadProgress(prev => {
+            const newProgress = { ...prev };
+            delete newProgress[fileId];
+            return newProgress;
+          });
+        }, 1000);
+
+        return imageUrl;
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        setImageUploadProgress(prev => {
+          const newProgress = { ...prev };
+          delete newProgress[fileId];
+          return newProgress;
+        });
+        toast({
+          title: "Upload failed",
+          description: `Failed to upload ${file.name}: ${error.message}`,
+          variant: "destructive",
+        });
+        return null;
+      }
+    });
+
+    try {
+      const results = await Promise.all(uploadPromises);
+      const successfulUploads = results.filter(Boolean) as string[];
+
+      setUploadedImages(prev => [...prev, ...successfulUploads]);
+      setValue('images', [...uploadedImages, ...successfulUploads]);
+
+      toast({
+        title: "Upload successful",
+        description: `${successfulUploads.length} image(s) uploaded successfully`,
+      });
+    } catch (error) {
+      console.error('Error in batch upload:', error);
+    } finally {
+      setUploadingImages(false);
+    }
+  }, [uploadedImages, setValue, toast]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'image/*': ['.jpeg', '.jpg', '.png', '.webp', '.gif']
+    },
+    maxFiles: 10,
+    maxSize: 5242880, // 5MB
+    disabled: uploadingImages
+  });
+
+  const removeImage = (index: number) => {
+    const newImages = uploadedImages.filter((_, i) => i !== index);
+    setUploadedImages(newImages);
+    setValue('images', newImages);
+  };
 
   const watchedValues = watch();
   const progress = (currentStep / STEPS.length) * 100;
@@ -215,7 +372,9 @@ export function CreateAuctionWizard() {
         category_id: data.category_id,
         starting_price: Number(data.starting_price),
         bid_increment: Number(data.bid_increment),
-        reserve_price: data.reserve_price ? Number(data.reserve_price) : null,
+        reserve_price: data.reserve_price && !isNaN(Number(data.reserve_price)) && Number(data.reserve_price) > 0
+          ? Number(data.reserve_price)
+          : null,
         start_time: data.start_time,
         end_time: data.end_time,
         condition: data.condition || 'used',
@@ -317,11 +476,11 @@ export function CreateAuctionWizard() {
                         onClick={() => setValue('category_id', category.id)}
                       >
                         <div
-                          className="text-4xl mb-2"
+                          className="text-4xl mb-2 emoji-display"
                           style={{
                             fontSize: '3rem',
                             lineHeight: '1',
-                            fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif'
+                            fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols", sans-serif'
                           }}
                         >
                           {category.icon}
@@ -411,10 +570,8 @@ export function CreateAuctionWizard() {
                 <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="reserve_price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  {...register('reserve_price', { valueAsNumber: true })}
+                  type="text"
+                  {...register('reserve_price')}
                   className={`pl-10 ${errors.reserve_price ? 'border-destructive' : ''}`}
                   placeholder="Minimum acceptable price (optional)"
                 />
@@ -445,19 +602,26 @@ export function CreateAuctionWizard() {
                     ${((watchedValues.starting_price || 0) + (watchedValues.bid_increment || 0)).toLocaleString()}
                   </span>
                 </div>
-                {watchedValues.reserve_price && (
-                  <div className="flex justify-between">
-                    <span>Reserve Price:</span>
-                    <span className={`font-semibold ${watchedValues.reserve_price < (watchedValues.starting_price || 0)
-                      ? 'text-destructive'
-                      : 'text-orange-500'
-                      }`}>
-                      ${watchedValues.reserve_price.toLocaleString()}
-                    </span>
-                  </div>
-                )}
-                {watchedValues.reserve_price && watchedValues.starting_price &&
-                  watchedValues.reserve_price < watchedValues.starting_price && (
+                {watchedValues.reserve_price &&
+                  watchedValues.reserve_price !== '' &&
+                  !isNaN(parseFloat(watchedValues.reserve_price)) &&
+                  parseFloat(watchedValues.reserve_price) > 0 && (
+                    <div className="flex justify-between">
+                      <span>Reserve Price:</span>
+                      <span className={`font-semibold ${parseFloat(watchedValues.reserve_price) < (watchedValues.starting_price || 0)
+                        ? 'text-destructive'
+                        : 'text-orange-500'
+                        }`}>
+                        ${parseFloat(watchedValues.reserve_price).toLocaleString()}
+                      </span>
+                    </div>
+                  )}
+                {watchedValues.reserve_price &&
+                  watchedValues.starting_price &&
+                  watchedValues.reserve_price !== '' &&
+                  !isNaN(parseFloat(watchedValues.reserve_price)) &&
+                  parseFloat(watchedValues.reserve_price) > 0 &&
+                  parseFloat(watchedValues.reserve_price) < watchedValues.starting_price && (
                     <div className="text-sm text-destructive bg-destructive/10 p-2 rounded">
                       ⚠️ Reserve price must be at least ${watchedValues.starting_price.toLocaleString()}
                     </div>
@@ -582,18 +746,90 @@ export function CreateAuctionWizard() {
             className="space-y-6"
           >
             {/* Image Upload */}
-            <div className="space-y-2">
-              <Label>Item Images</Label>
-              <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
-                <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-lg font-medium mb-2">Upload Images</p>
-                <p className="text-muted-foreground mb-4">
-                  Add up to 10 high-quality images of your item
-                </p>
-                <Button type="button" variant="outline">
-                  Choose Files
-                </Button>
+            <div className="space-y-4">
+              <Label>Item Images (up to 10)</Label>
+
+              {/* Dropzone */}
+              <div
+                {...getRootProps()}
+                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${isDragActive
+                    ? 'border-primary bg-primary/5'
+                    : uploadingImages
+                      ? 'border-muted-foreground/25 bg-muted/50'
+                      : 'border-muted-foreground/25 hover:border-primary/50'
+                  }`}
+              >
+                <input {...getInputProps()} />
+                {uploadingImages ? (
+                  <>
+                    <Loader2 className="h-12 w-12 text-primary mx-auto mb-4 animate-spin" />
+                    <p className="text-lg font-medium mb-2">Uploading Images...</p>
+                    <p className="text-muted-foreground">Please wait while we upload your images</p>
+                  </>
+                ) : isDragActive ? (
+                  <>
+                    <Upload className="h-12 w-12 text-primary mx-auto mb-4" />
+                    <p className="text-lg font-medium mb-2 text-primary">Drop images here</p>
+                    <p className="text-muted-foreground">Release to upload your images</p>
+                  </>
+                ) : (
+                  <>
+                    <Image className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-lg font-medium mb-2">Drag & Drop Images Here</p>
+                    <p className="text-muted-foreground mb-4">
+                      Or click to select files (Max 10 images, 5MB each)
+                    </p>
+                    <Button type="button" variant="outline" disabled={uploadingImages}>
+                      Choose Files
+                    </Button>
+                  </>
+                )}
               </div>
+
+              {/* Upload Progress */}
+              {Object.keys(imageUploadProgress).length > 0 && (
+                <div className="space-y-2">
+                  {Object.entries(imageUploadProgress).map(([fileId, progress]) => (
+                    <div key={fileId} className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span>{fileId.split('-')[0]}</span>
+                        <span>{progress}%</span>
+                      </div>
+                      <Progress value={progress} className="h-2" />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Image Preview Grid */}
+              {uploadedImages.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {uploadedImages.map((imageUrl, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={imageUrl}
+                        alt={`Upload ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-lg border"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => removeImage(index)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {uploadedImages.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No images uploaded yet. Add some high-quality photos to attract more bidders!
+                </p>
+              )}
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
@@ -694,12 +930,15 @@ export function CreateAuctionWizard() {
                     <span className="text-sm text-muted-foreground">Bid Increment:</span>
                     <p className="font-semibold">${watchedValues.bid_increment?.toLocaleString()}</p>
                   </div>
-                  {watchedValues.reserve_price && (
-                    <div>
-                      <span className="text-sm text-muted-foreground">Reserve Price:</span>
-                      <p className="font-semibold">${watchedValues.reserve_price.toLocaleString()}</p>
-                    </div>
-                  )}
+                  {watchedValues.reserve_price &&
+                    watchedValues.reserve_price !== '' &&
+                    !isNaN(parseFloat(watchedValues.reserve_price)) &&
+                    parseFloat(watchedValues.reserve_price) > 0 && (
+                      <div>
+                        <span className="text-sm text-muted-foreground">Reserve Price:</span>
+                        <p className="font-semibold">${parseFloat(watchedValues.reserve_price).toLocaleString()}</p>
+                      </div>
+                    )}
                   <div>
                     <span className="text-sm text-muted-foreground">Duration:</span>
                     <p className="font-semibold">

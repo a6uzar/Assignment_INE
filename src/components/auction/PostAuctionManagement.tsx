@@ -174,7 +174,7 @@ export function PostAuctionManagement({ auctionId, className }: PostAuctionManag
       .insert({
         user_id: auction?.seller_id,
         auction_id: auctionId,
-        type: 'bid_accepted',
+        type: 'payment_received',
         title: 'Payment Received',
         message: `Payment has been received for "${auction?.title}". Please prepare the item for shipping.`,
       });
@@ -206,7 +206,7 @@ export function PostAuctionManagement({ auctionId, className }: PostAuctionManag
         .insert({
           user_id: auction.winner_id,
           auction_id: auctionId,
-          type: 'bid_accepted',
+          type: 'item_shipped',
           title: 'Item Shipped',
           message: `Your item "${auction.title}" has been shipped. Tracking: ${shippingInfo.trackingNumber}`,
         });
@@ -300,7 +300,7 @@ Thank you for using Live Bid Dash!
         .insert({
           user_id: isUserWinner() ? auction.seller_id : auction.winner_id,
           auction_id: auctionId,
-          type: 'bid_accepted',
+          type: 'feedback_received',
           title: 'Feedback Received',
           message: `You received a ${feedbackRating}-star rating for auction "${auction.title}". ${feedbackComment}`,
         });

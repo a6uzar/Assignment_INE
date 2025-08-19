@@ -51,8 +51,8 @@ export const bidService = {
     }
 
     // Calculate minimum bid amount
-    const minBidAmount = auction.current_price === 0 
-      ? auction.starting_price 
+    const minBidAmount = auction.current_price === 0
+      ? auction.starting_price
       : auction.current_price + auction.bid_increment;
 
     if (bid.amount < minBidAmount) {
@@ -103,10 +103,10 @@ export const bidService = {
       .from('bids')
       .select(`
         *,
-        auctions(id, title, current_price, end_time, status)
+        auctions!inner(id, title, current_price, end_time, status)
       `)
       .eq('bidder_id', userId)
-      .eq('status', 'active')
+      .eq('auctions.status', 'active')
       .order('bid_time', { ascending: false });
   },
 
@@ -114,26 +114,24 @@ export const bidService = {
   async setAutoBid(auctionId: string, userId: string, maxAmount: number) {
     return supabase
       .from('bids')
-      .update({ 
+      .update({
         auto_bid_max_amount: maxAmount,
-        is_auto_bid: true 
+        is_auto_bid: true
       })
       .eq('auction_id', auctionId)
-      .eq('bidder_id', userId)
-      .eq('status', 'active');
+      .eq('bidder_id', userId);
   },
 
   // Remove auto-bid
   async removeAutoBid(auctionId: string, userId: string) {
     return supabase
       .from('bids')
-      .update({ 
+      .update({
         auto_bid_max_amount: null,
-        is_auto_bid: false 
+        is_auto_bid: false
       })
       .eq('auction_id', auctionId)
-      .eq('bidder_id', userId)
-      .eq('status', 'active');
+      .eq('bidder_id', userId);
   },
 
   // Helper function to get client IP (simplified)
@@ -167,15 +165,15 @@ export const bidService = {
       return { isValid: false, error: 'Auction is not active' };
     }
 
-    const minAmount = auction.current_price === 0 
-      ? auction.starting_price 
+    const minAmount = auction.current_price === 0
+      ? auction.starting_price
       : auction.current_price + auction.bid_increment;
 
     if (amount < minAmount) {
-      return { 
-        isValid: false, 
+      return {
+        isValid: false,
         minAmount,
-        error: `Minimum bid amount is $${minAmount}` 
+        error: `Minimum bid amount is $${minAmount}`
       };
     }
 

@@ -57,7 +57,6 @@ export function useAuctionParticipants({
           )
         `)
                 .eq('auction_id', auctionId)
-                .eq('status', 'active')
                 .order('bid_time', { ascending: false });
 
             if (biddersError) throw biddersError;

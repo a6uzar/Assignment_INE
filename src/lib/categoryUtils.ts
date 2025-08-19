@@ -56,6 +56,13 @@ const DEFAULT_CATEGORIES = [
         icon: '🏡',
         description: 'Furniture, appliances, garden tools and home decor',
         is_active: true
+    },
+    {
+        id: '99999999-9999-9999-9999-999999999999',
+        name: 'Books & Media',
+        icon: '📚',
+        description: 'Books, movies, music, magazines and digital media',
+        is_active: true
     }
 ];
 
@@ -117,9 +124,62 @@ export async function getCategoriesWithFallback() {
             return DEFAULT_CATEGORIES;
         }
 
-        return data && data.length > 0 ? data : DEFAULT_CATEGORIES;
+        // Process the data to ensure emojis are properly displayed
+        const processedCategories = (data && data.length > 0 ? data : DEFAULT_CATEGORIES).map(category => {
+            // Check if icon is an emoji or needs to be replaced
+            const iconNeedsReplacement = category.icon && (
+                category.icon.length > 2 || // Likely text if longer than 2 chars
+                !isEmoji(category.icon) // Not a proper emoji
+            );
+
+            if (iconNeedsReplacement) {
+                // Map text-based icons to emojis
+                const iconMap: { [key: string]: string } = {
+                    'Electronics': '💻',
+                    'Computer': '💻',
+                    'Package': '📦',
+                    'Art': '🎨',
+                    'Collectibles': '🎨',
+                    'Jewelry': '💎',
+                    'Watches': '💎',
+                    'Vehicle': '🚗',
+                    'Car': '🚗',
+                    'Property': '🏠',
+                    'House': '🏠',
+                    'Sports': '🏀',
+                    'Recreation': '🏀',
+                    'Fashion': '👕',
+                    'Clothing': '👕',
+                    'Home': '🏡',
+                    'Garden': '🏡',
+                    'Books': '📚',
+                    'Media': '📚',
+                    'BookOpen': '📚',
+                    'Book': '📚',
+                    'Other': '📦'
+                };
+
+                // Try to find an appropriate emoji
+                const newIcon = iconMap[category.icon] ||
+                    Object.entries(iconMap).find(([key]) =>
+                        category.name.toLowerCase().includes(key.toLowerCase())
+                    )?.[1] || '📦';
+
+                return { ...category, icon: newIcon };
+            }
+
+            return category;
+        });
+
+        return processedCategories;
     } catch (error) {
         console.error('Error getting categories:', error);
         return DEFAULT_CATEGORIES;
     }
+}
+
+// Helper function to check if a string is an emoji
+function isEmoji(str: string): boolean {
+    const emojiRegex = /^[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]$/u;
+    return str.length <= 2 && emojiRegex.test(str);
 }
